@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Ruta SISE · SISE v44</title>
+  <title>Ruta SISE · SISE v47</title>
   <style>
     :root{
       --sise:#c8173e;
@@ -462,15 +462,6 @@
       #captureSheet .chip{padding:9px 12px;font-size:13px}
     }
 </style>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-window.RUTA_SISE_SUPABASE_CONFIG = {
-  url: 'https://wsymamqhcshmdtbpwemq.supabase.co',
-  publishableKey: 'sb_publishable_6O0i55BDvqRBN5Zw_Hvrbw_SfVJdpO2',
-  bucket: 'ruta-sise-evidencias'
-};
-</script>
 </head>
 <body>
 <div class="app">
@@ -489,7 +480,7 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
       <div class="side-step" id="sideStep2"><div class="num">02</div><div><strong>Recorrido</strong><span>Captura en jornada</span></div></div>
       <div class="side-step step-link" id="sideStep3" role="button" tabindex="0" aria-label="Ir al cierre"><div class="num">03</div><div><strong>Cierre</strong><span>Hallazgos y acciones</span></div></div>
     </div>
-    <div class="sidebar-foot"><strong>RUTA SISE</strong><br>Evidencias locales · SISE 2026</div>
+    <div class="sidebar-foot"><strong>RUTA SISE</strong><br>Base central conectable · SISE 2026</div>
   </aside>
 
   <main class="main">
@@ -584,14 +575,12 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
                 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                 <select id="role">
                   <option value="">Selecciona un rol</option>
-                  <option>Jefe Área</option>
-                  <option>Analista</option>
-                  <option>Coordinador escuela</option>
-                  <option>Responsable</option>
+                  <option>Jefe de sedes y experiencia</option>
                   <option>Jefe de escuela</option>
-                  <option>Diseñador instruccional</option>
-                  <option>Gerente</option>
-                  <option>Docente</option>
+                  <option>Representante de Gestión Docente</option>
+                  <option>Representante de Innovación y Transformación Educativa</option>
+                  <option>Representante de Gestión Curricular</option>
+                  <option>Representante de Jefatura Sedes y Experiencia</option>
                 </select>
                 <span class="arrow">⌄</span>
               </div>
@@ -744,13 +733,13 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
       <div class="closed-card">
         <div class="closed-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4L19 6"/></svg></div>
         <h2>Visita cerrada y registrada</h2>
-        <p>La visita quedó finalizada. Las evidencias pendientes continúan sincronizándose en segundo plano mientras el navegador lo permita y se reanudarán automáticamente al volver a abrir Ruta SISE.</p>
+        <p>La visita quedó finalizada y se registraron la hora de salida y la duración. Puedes descargar el registro o iniciar una nueva visita.</p>
         <div class="closed-meta">
           <div><small>Hora de salida</small><strong id="closedTime">—</strong></div>
           <div><small>Duración</small><strong id="closedDuration">—</strong></div>
           <div><small>Registros de campo</small><strong id="closedRecords">0</strong></div>
         </div>
-        <div class="structured-note" style="margin:14px 0 0">Las evidencias no bloquean el cierre de la visita. Si cierras completamente el navegador antes de terminar la carga, quedarán guardadas localmente y se reintentará la próxima vez que abras Ruta SISE.</div><div class="closed-actions">
+        <div class="closed-actions">
           <button type="button" class="btn btn-outline" id="downloadClosedVisit">Descargar registros y adjuntos</button>
           <button type="button" class="btn btn-primary" id="newVisitBtn">Iniciar nueva visita</button>
         </div>
@@ -808,9 +797,12 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
     <h3 id="deriveModalTitle">Derivar hallazgo</h3>
     <div class="derive-summary"><small>Área sugerida</small><strong id="deriveArea">—</strong><p id="deriveFinding">—</p></div>
     <div class="field compact" id="deriveNameField"><label for="deriveName">Nombre de la persona <span class="required">*</span></label><div class="control"><input class="no-icon" id="deriveName" placeholder="Ej. Ana Pérez" /></div><span class="error">Ingresa el nombre.</span></div>
-    <div class="field compact" id="deriveEmailField"><label for="deriveEmail">Correo de la persona <span class="required">*</span></label><div class="control"><input class="no-icon" id="deriveEmail" type="email" placeholder="nombre@sise.edu.pe" /></div><span class="error">Ingresa un correo válido.</span></div>
+    <div class="field compact" id="deriveEmailField"><label for="deriveEmail">Correo principal <span class="required">*</span></label><div class="control"><input class="no-icon" id="deriveEmail" type="email" placeholder="nombre@sise.edu.pe" /></div><span class="error">Ingresa un correo válido.</span></div>
+    <div class="field compact" id="deriveEmail2Field"><label for="deriveEmail2">Correo adicional 1 <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><div class="control"><input class="no-icon" id="deriveEmail2" type="email" placeholder="copia1@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o deja el campo vacío.</span></div>
+    <div class="field compact" id="deriveEmail3Field"><label for="deriveEmail3">Correo adicional 2 <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><div class="control"><input class="no-icon" id="deriveEmail3" type="email" placeholder="copia2@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o deja el campo vacío.</span></div>
+    <div class="structured-note" style="margin:-2px 0 12px">El correo principal es obligatorio. Puedes agregar hasta dos correos adicionales para que reciban la misma derivación.</div>
     <div class="field compact"><label for="deriveMessage">Mensaje adicional</label><div class="control"><textarea id="deriveMessage" style="min-height:88px" placeholder="Añade una indicación breve si es necesario."></textarea></div></div>
-    <div class="derive-note">La derivación se registra como enviada al confirmar. Las evidencias permanecen solo en este navegador y no se adjuntan al correo.</div>
+    <div class="derive-note">La derivación se enviará directamente desde Ruta SISE. No se abrirá Outlook, Gmail ni otra aplicación. Si estás sin conexión, quedará en cola para enviarse automáticamente cuando vuelva internet.</div>
     <div class="exit-modal-actions" style="margin-top:16px"><button type="button" class="btn btn-outline" id="cancelDeriveBtn">Cancelar</button><button type="button" class="btn btn-primary" id="confirmDeriveBtn">Enviar derivación</button></div>
   </div>
 </div>
@@ -845,6 +837,7 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
         <div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
         <div><div class="sheet-kicker" id="personKicker">Persona escuchada</div><h4 id="personHeading">Datos del estudiante</h4><p id="personHelp">Identifica a la persona para que el registro pueda filtrarse y trazarse posteriormente.</p></div>
       </div>
+      <div class="field compact hidden" id="fieldStudentStatus"><label>Condición del estudiante <span class="required">*</span></label><div class="chips" id="studentStatusChips"><button type="button" class="chip" data-student-status="Estudiante">Estudiante</button><button type="button" class="chip" data-student-status="Egresado">Egresado</button></div><span class="error">Selecciona si es estudiante o egresado.</span></div>
       <div class="field compact" id="fieldPersonName"><label for="personName" id="personNameLabel">Nombre y apellidos <span class="required">*</span></label><div class="control"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="personName" placeholder="Escribe el nombre completo" /></div><span class="error">Registra el nombre de la persona escuchada.</span></div>
       <div class="field compact" id="fieldPersonCode"><label for="personCode" id="personCodeLabel">Código / DNI <span class="required">*</span></label><div class="control"><input class="no-icon" id="personCode" placeholder="Ingresa código institucional o DNI" /></div><span class="error">Registra el código institucional o DNI.</span></div>
     </section>
@@ -883,7 +876,7 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
 
     <section class="sheet-section">
       <div class="sheet-kicker">Evidencias</div>
-      <h4 class="title-with-info">Fotos y documentos <button type="button" class="info-btn" aria-label="Información sobre evidencias" data-info-title="Evidencias" data-info-text="Puedes tomar fotos desde el celular o adjuntar documentos. El registro se guarda de inmediato y las evidencias se conservan localmente mientras se cargan en segundo plano a Google Drive. Si la conexión se interrumpe, Ruta SISE vuelve a intentarlo cuando recupera internet.">i</button></h4>
+      <h4 class="title-with-info">Fotos y documentos <button type="button" class="info-btn" aria-label="Información sobre evidencias" data-info-title="Evidencias" data-info-text="Puedes tomar fotos desde el celular o adjuntar documentos. Los archivos quedan asociados al registro y se incluyen en el paquete de exportación junto con una ruta de acceso desde el archivo compatible con Excel.">i</button></h4>
       <div class="evidence-zone">
         <div class="evidence-actions">
           <button type="button" class="evidence-btn primary" id="takePhotoBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h4l2-3h4l2 3h4v13H4V7Z"/><circle cx="12" cy="13" r="4"/></svg>Tomar foto</button>
@@ -892,7 +885,7 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
         <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" />
         <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" multiple class="hidden" />
         <div class="preview-grid" id="previewGrid"></div>
-        <div class="structured-note" style="margin-top:12px">En celular, “Tomar foto” abre la cámara cuando el navegador lo permite. Las evidencias quedan guardadas localmente en este navegador y no se sincronizan con el script.</div>
+        <div class="structured-note" style="margin-top:12px">En celular, “Tomar foto” abre la cámara cuando el navegador lo permite. En PC puedes adjuntar archivos. El registro conserva el nombre y tipo de cada evidencia para su trazabilidad.</div>
       </div>
     </section>
   </div>
@@ -946,53 +939,14 @@ window.RUTA_SISE_SUPABASE_CONFIG = {
 const RUTA_SISE_CONFIG = Object.assign({
   // Pega aqui la URL /exec de tu Web App de Google Apps Script.
   // Esta única URL centraliza: guardado de registros, historial y derivaciones por correo.
-  appsScriptEndpoint:'https://script.google.com/macros/s/AKfycbyGNH9mMO0-3jE1IoaRN_HuGac1FdSw_p7Nv5FbQFVCJEFpHYn9cbuobO3AqI41QUwZ/exec',
+  appsScriptEndpoint:'',
   emailEndpoint:'', // opcional: si queda vacío usa appsScriptEndpoint
   emailTimeoutMs:12000,
   transcriptionEndpoint:'',
   transcriptionTimeoutMs:30000,
-  remoteSyncEnabled:true,
-  supabaseUrl:(window.RUTA_SISE_SUPABASE_CONFIG||{}).url||'',
-  supabaseKey:(window.RUTA_SISE_SUPABASE_CONFIG||{}).publishableKey||'',
-  supabaseBucket:(window.RUTA_SISE_SUPABASE_CONFIG||{}).bucket||'ruta-sise-evidencias'
+  remoteSyncEnabled:true
 }, window.RUTA_SISE_CONFIG || {});
 
-const SUPABASE_RECORD_QUEUE_KEY='rutaSiseSupabaseRecordQueueV43';
-let rutaSupabase=null;
-let rutaSupabaseUser=null;
-function supabaseConfigured(){return !!(RUTA_SISE_CONFIG.supabaseUrl&&RUTA_SISE_CONFIG.supabaseKey&&window.supabase?.createClient)}
-function getSupabase(){
-  if(!supabaseConfigured())return null;
-  if(!rutaSupabase)rutaSupabase=window.supabase.createClient(RUTA_SISE_CONFIG.supabaseUrl,RUTA_SISE_CONFIG.supabaseKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  return rutaSupabase;
-}
-async function ensureAnonymousSupabaseSession(){
-  const sb=getSupabase();if(!sb)throw new Error('SUPABASE_NOT_CONFIGURED');
-  const {data:sess}=await sb.auth.getSession();
-  if(sess?.session?.user){rutaSupabaseUser=sess.session.user;return rutaSupabaseUser}
-  const {data,error}=await sb.auth.signInAnonymously();if(error)throw error;
-  rutaSupabaseUser=data?.user||data?.session?.user||null;if(!rutaSupabaseUser)throw new Error('SUPABASE_ANON_SESSION_FAILED');return rutaSupabaseUser;
-}
-function supabaseSafeRecord(record){
-  const x={...record};delete x.time;delete x.attachmentRefs;delete x.remoteEvidence;delete x.evidenceFolderUrl;delete x.evidenceUrls;return x;
-}
-function readSupabaseRecordQueue(){try{return JSON.parse(localStorage.getItem(SUPABASE_RECORD_QUEUE_KEY)||'[]')||[]}catch(e){return []}}
-function writeSupabaseRecordQueue(items){try{localStorage.setItem(SUPABASE_RECORD_QUEUE_KEY,JSON.stringify(items.slice(-800)))}catch(e){}}
-function queueSupabaseRecord(record){
-  if(!record)return;const id=record.recordId||record.historyId;if(!id)return;
-  const q=readSupabaseRecordQueue(),item={record:supabaseSafeRecord(record),queuedAt:new Date().toISOString()};
-  const i=q.findIndex(x=>(x.record?.recordId||x.record?.historyId)===id);if(i>=0)q[i]=item;else q.push(item);writeSupabaseRecordQueue(q);
-}
-async function upsertSupabaseRecord(record){
-  const sb=getSupabase();if(!sb)return;
-  const user=await ensureAnonymousSupabaseSession();const r=supabaseSafeRecord(record);const recordId=r.recordId||r.historyId;if(!recordId)return;
-  const row={record_id:String(recordId),visit_id:String(r.visitId||''),owner_uid:user.id,visitor_email:String(r.visitorEmail||'').toLowerCase(),visit_date:String(r.visitDate||''),record_type:String(r.recordType||''),campus:String(r.campus||''),nature:String(r.nature||''),followup:String(r.followup||''),derivation_status:String(r.derivationStatus||''),system_event:String(r.systemEvent||''),payload:r,updated_at:new Date().toISOString()};
-  const {error}=await sb.from('ruta_sise_records').upsert(row,{onConflict:'record_id'});if(error)throw error;
-}
-async function flushSupabaseRecordQueue(){
-  if(!navigator.onLine||!supabaseConfigured())return;const q=readSupabaseRecordQueue();if(!q.length)return;const left=[];
-  for(const item of q){try{await upsertSupabaseRecord(item.record)}catch(e){left.push(item);console.warn('Supabase record pending',e)}}writeSupabaseRecordQueue(left);
-}
 const REMOTE_QUEUE_KEY='rutaSiseRemoteSyncQueueV1';
 let remoteHistoryCache=[];
 function getAppsScriptEndpoint(){return (RUTA_SISE_CONFIG.appsScriptEndpoint||'').trim()}
@@ -1002,26 +956,25 @@ function queueRemoteRecord(record){
   if(!RUTA_SISE_CONFIG.remoteSyncEnabled||!record)return;
   const email=String(record.visitorEmail||'').trim().toLowerCase();
   const historyId=record.historyId||record.recordId||`${record.systemEvent||'EVT'}-${Date.now()}`;
-  const item={queueId:`${email}__${historyId}`,record:{...record,historyId,visitorEmail:email,time:undefined,attachmentRefs:[]},queuedAt:new Date().toISOString()};
+  const item={queueId:`${email}__${historyId}`,record:{...record,historyId,visitorEmail:email,time:undefined,attachmentRefs:(record.attachmentRefs||[]).map(a=>({id:a.id||'',name:a.name||'',type:a.type||'',size:a.size||0}))},queuedAt:new Date().toISOString()};
   const q=readRemoteQueue();const idx=q.findIndex(x=>x.queueId===item.queueId);if(idx>=0)q[idx]=item;else q.push(item);writeRemoteQueue(q);
 }
-function submitAppsScriptForm(action,data){
-  const endpoint=getAppsScriptEndpoint();if(!endpoint)throw new Error('APPS_SCRIPT_ENDPOINT_NOT_CONFIGURED');
-  let frame=document.getElementById('rutaSiseTransportFrame');
-  if(!frame){frame=document.createElement('iframe');frame.id='rutaSiseTransportFrame';frame.name='rutaSiseTransportFrame';frame.style.display='none';document.body.appendChild(frame)}
-  const form=document.createElement('form');form.method='POST';form.action=endpoint;form.target='rutaSiseTransportFrame';form.style.display='none';
-  const input=document.createElement('input');input.type='hidden';input.name='payload';input.value=JSON.stringify({action,...data});form.appendChild(input);
-  document.body.appendChild(form);form.submit();setTimeout(()=>form.remove(),1200);return {ok:true,submitted:true};
-}
 async function postAppsScript(action,data,timeoutMs=12000){
-  // El envío se realiza mediante FORM POST oculto para evitar CORS/redirects de Apps Script desde GitHub Pages.
-  return submitAppsScriptForm(action,data);
+  const endpoint=getAppsScriptEndpoint();if(!endpoint)throw new Error('APPS_SCRIPT_ENDPOINT_NOT_CONFIGURED');
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);
+  try{
+    const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},credentials:'omit',body:JSON.stringify({action,...data}),signal:controller.signal,redirect:'follow'});
+    if(!response.ok)throw new Error(`APPS_SCRIPT_HTTP_${response.status}`);
+    const text=await response.text();let json={};try{json=JSON.parse(text)}catch(e){}
+    if(json&&json.ok===false)throw new Error(json.error||'APPS_SCRIPT_ERROR');
+    return json;
+  }finally{clearTimeout(timer)}
 }
 async function flushRemoteQueue(){
   if(!navigator.onLine||!getAppsScriptEndpoint()||!RUTA_SISE_CONFIG.remoteSyncEnabled)return;
   const q=readRemoteQueue();if(!q.length)return;
   const remaining=[];
-  for(const item of q){try{await postAppsScript('upsertRecord',{record:item.record})}catch(e){remaining.push(item)}}
+  for(const item of q){try{await postAppsScript('upsertRecord',{record:item.record});}catch(e){remaining.push(item)}}
   writeRemoteQueue(remaining);
 }
 function fetchRemoteHistoryJSONP(email){
@@ -1103,13 +1056,12 @@ async function flushPendingDerivations(){
   function readUserHistory(){try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')||[]}catch(e){return []}}
   function persistUserHistory(record){
     const email=(record?.visitorEmail||state.visitMeta?.visitorEmail||$('#email')?.value||'').trim().toLowerCase();if(!email||!record)return;
-    const item={...record,visitorEmail:email,time:undefined,attachmentRefs:[]};
+    const item={...record,visitorEmail:email,time:undefined,attachmentRefs:(record.attachmentRefs||[]).map(a=>({id:a.id||'',name:a.name||'',type:a.type||'',size:a.size||0}))};
     const id=item.historyId||item.recordId||`${item.systemEvent||'EVT'}-${Date.now()}`;item.historyId=id;
     let all=readUserHistory();const idx=all.findIndex(x=>x.historyId===id&&String(x.visitorEmail||'').toLowerCase()===email);if(idx>=0)all[idx]=item;else all.unshift(item);all=all.slice(0,500);
     try{localStorage.setItem(HISTORY_KEY,JSON.stringify(all))}catch(e){}
     queueRemoteRecord(item);
-    queueSupabaseRecord(item);
-    if(navigator.onLine){flushRemoteQueue();flushSupabaseRecordQueue();processEvidenceQueue();}
+    if(navigator.onLine)flushRemoteQueue();
   }
   function currentUserEmail(){return (state.visitMeta?.visitorEmail||$('#email')?.value||'').trim().toLowerCase()}
   function historyItemsForCurrentUser(){
@@ -1123,8 +1075,8 @@ async function flushPendingDerivations(){
     const cells=[
       ['ID de registro',x.recordId],['Tipo de registro',x.recordType],['Fecha / hora',[x.visitDate,x.recordTime].filter(Boolean).join(' ')],['Sede',x.campus],
       ['Modalidad',x.modality],['Área visitante',x.visitorArea],['Programa / carrera',x.program],['Curso / asignatura',x.course],['Ciclo',x.cycle],['Turno',x.turn],
-      ['Aula / sección',x.section],['Contexto / referencia',x.reference],['Persona',x.personName],['Código / DNI',x.personCode],['Dimensión',x.dimension],['Qué observaste',x.criteria],
-      ['Naturaleza',x.nature],['Recurrencia',x.recurrence],['Acción posterior',x.followup],['Área derivación',x.derivationArea],['Estado derivación',x.derivationStatus],['Evidencias',x.evidenceCount||0]
+      ['Aula / sección',x.section],['Contexto / referencia',x.reference],['Condición / tipo',x.personType],['Persona',x.personName],['Código / DNI',x.personCode],['Dimensión',x.dimension],['Qué observaste',x.criteria],
+      ['Naturaleza',x.nature],['Recurrencia',x.recurrence],['Acción posterior',x.followup],['Área derivación',x.derivationArea],['Correos derivación',x.derivationEmail],['Estado derivación',x.derivationStatus],['Evidencias',x.evidenceCount||0]
     ].filter(c=>String(c[1]??'').trim()!=='');
     return `<div class="history-detail-grid">${cells.map(c=>`<div class="history-detail-cell"><small>${escapeHtml(c[0])}</small><strong>${escapeHtml(c[1])}</strong></div>`).join('')}${x.note?`<div class="history-detail-cell history-detail-note"><small>Nota</small><strong>${escapeHtml(x.note)}</strong></div>`:''}${x.transcript?`<div class="history-detail-cell history-detail-note"><small>Transcripción</small><strong>${escapeHtml(x.transcript)}</strong></div>`:''}</div>`;
   }
@@ -1177,7 +1129,8 @@ async function flushPendingDerivations(){
 
   function openDerivation(recordId){
     const record=state.records.find(r=>r.recordId===recordId);if(!record)return;state.derivationRecordId=recordId;const rec=recommendationFor(record);
-    $('#deriveArea').textContent=rec.area;$('#deriveFinding').textContent=record.note||record.criteria||record.dimension||record.recordType;$('#deriveName').value=record.derivationName||'';$('#deriveEmail').value=record.derivationEmail||'';$('#deriveMessage').value='';$('#deriveNameField').classList.remove('invalid');$('#deriveEmailField').classList.remove('invalid');$('#deriveModal').classList.add('open');$('#deriveModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#deriveName')?.focus(),100)
+    const previousEmails=[record.derivationEmailPrimary,record.derivationEmailCc1,record.derivationEmailCc2].filter(Boolean);if(!previousEmails.length&&record.derivationEmail)previousEmails.push(...String(record.derivationEmail).split(/\s*[|,;]\s*/).filter(Boolean));
+    $('#deriveArea').textContent=rec.area;$('#deriveFinding').textContent=record.note||record.criteria||record.dimension||record.recordType;$('#deriveName').value=record.derivationName||'';$('#deriveEmail').value=previousEmails[0]||'';$('#deriveEmail2').value=previousEmails[1]||'';$('#deriveEmail3').value=previousEmails[2]||'';$('#deriveMessage').value='';$('#deriveNameField').classList.remove('invalid');$('#deriveEmailField').classList.remove('invalid');$('#deriveEmail2Field').classList.remove('invalid');$('#deriveEmail3Field').classList.remove('invalid');$('#deriveModal').classList.add('open');$('#deriveModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#deriveName')?.focus(),100)
   }
   function closeDerivation(){$('#deriveModal').classList.remove('open');$('#deriveModal').setAttribute('aria-hidden','true');state.derivationRecordId=''}
   function buildDerivationMail(record,recipientName,area,message){
@@ -1379,7 +1332,7 @@ async function flushPendingDerivations(){
   });
   updateCampusAddressPreview();
 
-  window.addEventListener('online',()=>{processEvidenceQueue();flushSupabaseRecordQueue();
+  window.addEventListener('online',()=>{
     $('#networkNote').textContent='Conexión disponible. Si ya capturaste GPS, la dirección exacta puede actualizarse automáticamente.';
     flushRemoteQueue();
     if(state.location)reverseGeocode(state.location.lat,state.location.lng).then(a=>{if(a){state.location.address=a;$('#autoAddress').textContent=a;}});
@@ -1477,7 +1430,7 @@ async function flushPendingDerivations(){
     if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){} state.audioObjectUrl='';}
     $('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.'; $('#audioPlayback').style.display='none'; $('#audioPlayback').removeAttribute('src');
     state.speechBaseText='';state.speechFinalText='';state.speechInterimText='';state.speechFatal=false;
-    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null; $('#saveCapture').textContent='Cerrar y registrar';
+    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldStudentStatus')?.classList.remove('invalid'); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null; $('#saveCapture').textContent='Cerrar y registrar';
   }
   function openCapture(action,keepEdit=false){
     if(!keepEdit)resetCaptureForm(); state.currentAction=action;
@@ -1487,12 +1440,13 @@ async function flushPendingDerivations(){
     $('#criteriaTitle').textContent=action==='Estudiante'||action==='Docente'?'¿Qué tema apareció en la conversación?':'¿Qué observaste?';
     $('#criteriaChips').innerHTML=(chipsByAction[action]||[]).map(x=>`<button type="button" class="chip">${escapeHtml(x)}</button>`).join(''); bindChipGroup('#criteriaChips',syncCriteriaOther); syncCriteriaOther();
     applyContextFields(action); renderDimensionOptions(action);
-    const person=action==='Estudiante'||action==='Docente'; $('#personSection').classList.toggle('hidden',!person);
+    const person=action==='Estudiante'||action==='Docente'; $('#personSection').classList.toggle('hidden',!person); if(!person)$('#fieldStudentStatus')?.classList.add('hidden');
     if(person){
       const isStudent=action==='Estudiante'; $('#personKicker').textContent='Persona escuchada'; $('#personHeading').textContent=isStudent?'Datos del estudiante':'Datos del docente';
-      $('#personHelp').textContent=isStudent?'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del estudiante.':'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del docente.';
-      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
-      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
+      $('#personHelp').textContent=isStudent?'Indica primero si la persona es estudiante o egresado. Estos datos quedarán segmentados para el consolidado.':'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del docente.';
+      $('#fieldStudentStatus').classList.toggle('hidden',!isStudent);
+      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
+      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
     }
     markVisibleCaptureFieldsRequired();
     document.body.classList.add('capture-open');
@@ -1504,6 +1458,7 @@ async function flushPendingDerivations(){
   function bindChipGroup(sel,onChange){$$(sel+' .chip').forEach(ch=>ch.addEventListener('click',()=>{ch.classList.toggle('active');if(onChange)onChange(ch)}))}
   function syncCriteriaOther(){const active=$$('#criteriaChips .chip.active').some(c=>c.textContent.trim()==='Otro');$('#criteriaOtherWrap')?.classList.toggle('hidden',!active);if(!active){$('#criteriaOther').value='';$('#criteriaOtherWrap')?.classList.remove('invalid')}}
   bindChipGroup('#natureChips');
+  $$('#studentStatusChips .chip').forEach(ch=>ch.addEventListener('click',()=>{ $$('#studentStatusChips .chip').forEach(x=>x.classList.remove('active')); ch.classList.add('active'); $('#fieldStudentStatus')?.classList.remove('invalid'); }));
 
   // Evidence files / mobile camera
   $('#takePhotoBtn').addEventListener('click',()=>$('#cameraInput').click());
@@ -1511,8 +1466,8 @@ async function flushPendingDerivations(){
   $('#cameraInput').addEventListener('change',e=>addFiles([...e.target.files]));
   $('#fileInput').addEventListener('change',e=>addFiles([...e.target.files]));
   function addFiles(files){
-    let rejected=0;files.forEach(file=>{if(file.size>8*1024*1024){rejected++;return}if(state.currentAttachments.length<10)state.currentAttachments.push({file,name:file.name,type:file.type,size:file.size,url:file.type.startsWith('image/')?URL.createObjectURL(file):''})});
-    renderAttachments(); $('#cameraInput').value=''; $('#fileInput').value='';if(rejected)showToast(`${rejected} archivo(s) superan 8 MB y no se agregaron.`);
+    files.forEach(file=>{if(state.currentAttachments.length<10)state.currentAttachments.push({file,name:file.name,type:file.type,size:file.size,url:file.type.startsWith('image/')?URL.createObjectURL(file):''})});
+    renderAttachments(); $('#cameraInput').value=''; $('#fileInput').value='';
   }
   function renderAttachments(){
     const box=$('#previewGrid');
@@ -1521,80 +1476,17 @@ async function flushPendingDerivations(){
     $$('[data-remove]').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.remove;const a=state.currentAttachments[i];if(a&&a.url)URL.revokeObjectURL(a.url);state.currentAttachments.splice(i,1);renderAttachments()}));
   }
   function attName(a){return a?.file?.name||a?.name||'archivo'} function attType(a){return a?.file?.type||a?.type||''} function attSize(a){return a?.file?.size||a?.size||0} function attBlob(a){return a?.file||a?.blob||null} function formatBytes(n){if(n<1024)return n+' B';if(n<1048576)return (n/1024).toFixed(1)+' KB';return (n/1048576).toFixed(1)+' MB'}
-  const EVIDENCE_UPLOAD_QUEUE_KEY='rutaSiseEvidenceUploadQueueV42';
-  const EVIDENCE_DB_NAME='rutaAulaDB';
-  const EVIDENCE_DB_VERSION=2;
-  const EVIDENCE_QUEUE_STORE='uploadQueue';
-  function openEvidenceDB(){
-    return new Promise((resolve,reject)=>{
-      if(!('indexedDB' in window)){reject(new Error('IndexedDB no disponible'));return}
-      const req=indexedDB.open(EVIDENCE_DB_NAME,EVIDENCE_DB_VERSION);
-      req.onupgradeneeded=()=>{
-        const db=req.result;
-        if(!db.objectStoreNames.contains('attachments')){const s=db.createObjectStore('attachments',{keyPath:'id'});s.createIndex('recordId','recordId',{unique:false})}
-        if(!db.objectStoreNames.contains(EVIDENCE_QUEUE_STORE)){const q=db.createObjectStore(EVIDENCE_QUEUE_STORE,{keyPath:'recordId'});q.createIndex('queuedAt','queuedAt',{unique:false})}
-      };
-      req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
-    });
-  }
-  async function queueEvidenceUpload(record){
-    if(!record?.recordId||!record?.attachmentRefs?.length)return;
-    const job={recordId:record.recordId,visitorEmail:record.visitorEmail||'',refs:record.attachmentRefs,queuedAt:new Date().toISOString(),attempts:0};
-    try{const db=await openEvidenceDB();await new Promise((resolve,reject)=>{const tx=db.transaction(EVIDENCE_QUEUE_STORE,'readwrite');tx.objectStore(EVIDENCE_QUEUE_STORE).put(job);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){console.warn('No se pudo persistir cola de evidencias',e)}
-    requestEvidenceBackgroundSync();
-  }
-  async function readEvidenceQueue(){
-    try{const db=await openEvidenceDB();const rows=await new Promise((resolve,reject)=>{const tx=db.transaction(EVIDENCE_QUEUE_STORE,'readonly'),req=tx.objectStore(EVIDENCE_QUEUE_STORE).getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});db.close();return rows}catch(e){return []}
-  }
-  async function deleteEvidenceQueueJob(recordId){
-    try{const db=await openEvidenceDB();await new Promise((resolve,reject)=>{const tx=db.transaction(EVIDENCE_QUEUE_STORE,'readwrite');tx.objectStore(EVIDENCE_QUEUE_STORE).delete(recordId);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){}
-  }
-  async function touchEvidenceQueueJob(job){
-    try{const db=await openEvidenceDB();job.attempts=Number(job.attempts||0)+1;job.lastAttemptAt=new Date().toISOString();await new Promise((resolve,reject)=>{const tx=db.transaction(EVIDENCE_QUEUE_STORE,'readwrite');tx.objectStore(EVIDENCE_QUEUE_STORE).put(job);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});db.close()}catch(e){}
-  }
-  async function requestEvidenceBackgroundSync(){setTimeout(()=>processEvidenceQueue(),180)}
-  function sanitizeStorageName(name){return String(name||'archivo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9._-]+/g,'_').replace(/^_+|_+$/g,'').slice(-120)||'archivo'}
-  async function uploadEvidenceBlob(record,ref,item){
-    const blob=attBlob(item);if(!blob)throw new Error('EVIDENCE_BLOB_MISSING');if(blob.size>8*1024*1024)throw new Error('EVIDENCE_TOO_LARGE');
-    const sb=getSupabase();if(!sb)throw new Error('SUPABASE_NOT_CONFIGURED');const user=await ensureAnonymousSupabaseSession();
-    const path=`${user.id}/${sanitizeStorageName(record.recordId)}/${sanitizeStorageName(ref.id)}_${sanitizeStorageName(ref.name)}`;
-    const {error:upErr}=await sb.storage.from(RUTA_SISE_CONFIG.supabaseBucket).upload(path,blob,{contentType:ref.type||blob.type||'application/octet-stream',upsert:true,cacheControl:'3600'});if(upErr)throw upErr;
-    const meta={evidence_id:ref.id,record_id:record.recordId,owner_uid:user.id,bucket:RUTA_SISE_CONFIG.supabaseBucket,object_path:path,name:ref.name,type:ref.type||blob.type||'',size:Number(ref.size||blob.size||0),uploaded_at:new Date().toISOString()};
-    const {error:metaErr}=await sb.from('ruta_sise_evidences').upsert(meta,{onConflict:'evidence_id'});if(metaErr)throw metaErr;
-    return meta;
-  }
-  async function fetchEvidenceStatus(recordId,expected){
-    const sb=getSupabase();if(!sb)throw new Error('SUPABASE_NOT_CONFIGURED');await ensureAnonymousSupabaseSession();
-    const {data,error}=await sb.from('ruta_sise_evidences').select('evidence_id,record_id,bucket,object_path,name,type,size,uploaded_at').eq('record_id',recordId).order('uploaded_at',{ascending:true});if(error)throw error;
-    const items=(data||[]).map(x=>({evidenceId:x.evidence_id,recordId:x.record_id,bucket:x.bucket,objectPath:x.object_path,name:x.name,type:x.type,size:x.size,uploadedAt:x.uploaded_at}));
-    return {ok:true,complete:Number(expected||0)>0?items.length>=Number(expected):true,uploadedCount:items.length,expectedCount:Number(expected||0),status:Number(expected||0)>0?(items.length>=Number(expected)?'Cargadas en nube':items.length?`Carga parcial (${items.length}/${expected})`:'Pendiente de sincronización'):'Sin evidencias',items};
-  }
-  async function confirmEvidenceUpload(recordId,expected){for(let i=0;i<4;i++){try{const st=await fetchEvidenceStatus(recordId,expected);if(st?.complete)return st}catch(e){}await new Promise(r=>setTimeout(r,500+i*300))}return null}
-  let evidenceQueueProcessing=false;
-  async function processEvidenceQueue(){
-    if(evidenceQueueProcessing||!navigator.onLine||!supabaseConfigured())return;evidenceQueueProcessing=true;
-    try{
-      const q=await readEvidenceQueue();if(!q.length)return;
-      for(const job of q){
-        const record=state.records.find(r=>r.recordId===job.recordId)||{recordId:job.recordId,visitorEmail:job.visitorEmail,attachmentRefs:job.refs,evidenceCount:job.refs.length};
-        try{const existing=await fetchEvidenceStatus(job.recordId,job.refs.length);if(existing?.complete){record.evidenceSyncStatus='Cargadas en nube';record.evidenceItems=existing.items||[];persistUserHistory(record);await deleteEvidenceQueueJob(job.recordId);continue}}catch(e){}
-        const items=await loadAttachments(record);let failed=false;
-        for(let i=0;i<job.refs.length;i++){
-          const ref=job.refs[i],item=items.find((x,idx)=>job.refs[idx]?.id===ref.id)||items[i];if(!item){failed=true;continue}
-          try{await uploadEvidenceBlob(record,ref,item)}catch(e){failed=true;console.warn('Ruta SISE evidencia pendiente',e)}
-        }
-        const status=await confirmEvidenceUpload(job.recordId,job.refs.length);
-        if(status?.complete){record.evidenceSyncStatus='Cargadas en nube';record.evidenceItems=status.items||[];persistUserHistory(record);await deleteEvidenceQueueJob(job.recordId)}
-        else{record.evidenceSyncStatus=failed?'Pendiente de sincronización':(status?.status||'Pendiente de sincronización');persistUserHistory(record);await touchEvidenceQueueJob(job)}
-      }
-    }finally{evidenceQueueProcessing=false}
-  }
-
-
   function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 
 
-  function openAttachmentDB(){return openEvidenceDB()}
+  function openAttachmentDB(){
+    return new Promise((resolve,reject)=>{
+      if(!('indexedDB' in window)){reject(new Error('IndexedDB no disponible'));return}
+      const req=indexedDB.open('rutaAulaDB',1);
+      req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('attachments')){const s=db.createObjectStore('attachments',{keyPath:'id'});s.createIndex('recordId','recordId',{unique:false})}};
+      req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+    });
+  }
   async function deleteStoredAttachments(recordId){
     try{const db=await openAttachmentDB(); await new Promise((resolve,reject)=>{const tx=db.transaction('attachments','readwrite'),store=tx.objectStore('attachments'),idx=store.index('recordId'),req=idx.openCursor(IDBKeyRange.only(recordId));req.onsuccess=e=>{const c=e.target.result;if(c){c.delete();c.continue()} };tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)});db.close()}catch(e){}
   }
@@ -1649,6 +1541,7 @@ async function flushPendingDerivations(){
     });
     const personVisible=!$('#personSection').classList.contains('hidden');
     if(personVisible){
+      if(!$('#fieldStudentStatus').classList.contains('hidden')){const statusOk=!!$('#studentStatusChips .chip.active');$('#fieldStudentStatus').classList.toggle('invalid',!statusOk);if(!statusOk){ok=false;if(!first)first=$('#studentStatusChips .chip')}}
       [['#personName','Registra el nombre de la persona escuchada.'],['#personCode','Registra el código institucional o DNI.']].forEach(([sel,msg])=>{const el=$(sel),yes=String(el.value||'').trim().length>0;setFieldInvalid(el,!yes,msg);if(!yes){ok=false;if(!first)first=el}});
     }
     const dim=$('#captureDimension'),dimOk=!!dim.value;setFieldInvalid(dim,!dimOk,'Selecciona una dimensión.');if(!dimOk){ok=false;if(!first)first=dim}
@@ -1686,15 +1579,14 @@ async function flushPendingDerivations(){
       visitorName:state.visitMeta.visitorName, visitorEmail:state.visitMeta.visitorEmail, visitorArea:state.visitMeta.area, visitorRole:state.visitMeta.role,
       campus:state.visitMeta.campus, modality:state.visitMeta.modality, platform:state.visitMeta.platform, virtualSession:state.visitMeta.sessionId,
       address:state.visitMeta.modality==='Presencial'?(state.location?.address||getCampusOfflineAddress()||''):'', latitude:state.visitMeta.modality==='Presencial'?(state.location?.lat??''):'', longitude:state.visitMeta.modality==='Presencial'?(state.location?.lng??''):'', accuracyM:state.visitMeta.modality==='Presencial'&&state.location?.accuracy?Math.round(state.location.accuracy):'',
-      recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?'Estudiante':'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
+      recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?($('#studentStatusChips .chip.active')?.dataset.studentStatus||''):'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
       program:$('#contextProgramField').classList.contains('hidden')?'':$('#captureProgram').value.trim(), course:$('#contextCourseField').classList.contains('hidden')?'':$('#captureCourse').value.trim(), cycle:$('#contextCycleField').classList.contains('hidden')?'':$('#captureCycle').value.trim(), turn:$('#contextTurnField').classList.contains('hidden')?'':$('#captureTurn').value, section:$('#contextSectionField').classList.contains('hidden')?'':$('#captureSection').value.trim(), space:$('#contextSpaceField').classList.contains('hidden')?'':$('#captureSpace').value.trim(), reference:$('#contextReferenceField').classList.contains('hidden')?'':$('#captureReference').value.trim(),
-      dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
-      note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, evidenceSyncStatus:attachmentRefs.length?'Pendiente de sincronización':'Sin evidencias', time:editing?.time||now
+      dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationEmailPrimary:editing?.derivationEmailPrimary||'', derivationEmailCc1:editing?.derivationEmailCc1||'', derivationEmailCc2:editing?.derivationEmailCc2||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
+      note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, time:editing?.time||now
     };
     if(editing){const i=state.records.findIndex(r=>r.recordId===recordId);state.records[i]=record;showToast(`Registro ${recordId} actualizado.`)}else{state.records.unshift(record);if(action==='Aula')state.counters.rooms++;showToast(`Registro ${recordId} guardado.`)}
     try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
     persistUserHistory(record);
-    if(record.attachmentRefs?.length){queueEvidenceUpload(record);setTimeout(()=>processEvidenceQueue(),120)}
     state.editingRecordId=null; updateCounters(); renderRecent(); closeCapture();
   });
 
@@ -1705,7 +1597,7 @@ async function flushPendingDerivations(){
   }
 
   $('#recentList').addEventListener('click',async e=>{const btn=e.target.closest('[data-edit-record]');if(!btn)return;const record=state.records.find(r=>r.recordId===btn.dataset.editRecord);if(!record)return;openCapture(record.actionKey||'Hallazgo');state.editingRecordId=record.recordId;$('#sheetEyebrow').textContent='Editar registro';$('#saveCapture').textContent='Actualizar registro';
-    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';$('#captureNote').value=record.note||'';$('#captureDimension').value=record.dimension||'';
+    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';$$('#studentStatusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.studentStatus===(record.personType||'')));$('#captureNote').value=record.note||'';$('#captureDimension').value=record.dimension||'';
     const criteriaParts=(record.criteria||'').split(' | ');$$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',c.textContent==='Otro'?criteriaParts.some(x=>x.startsWith('Otro')):criteriaParts.includes(c.textContent)));$('#criteriaOther').value=record.criteriaOther||((criteriaParts.find(x=>x.startsWith('Otro: '))||'').replace(/^Otro:\s*/,''));syncCriteriaOther();$$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent===record.nature));
     if(record.transcript){$('#transcriptBox').textContent=record.transcript} state.currentAttachments=await loadAttachments(record);renderAttachments();
   });
@@ -1731,7 +1623,7 @@ async function flushPendingDerivations(){
       const list=await attachmentFilesForRecord(r);allAtt[r.recordId]=list;maxAtt=Math.max(maxAtt,list.length);
       for(const item of list){const blob=attBlob(item.att);if(blob)zipFiles.push({name:item.path,data:new Uint8Array(await blob.arrayBuffer())})}
     }
-    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['EVENTO_SISTEMA','systemEvent'],['ESTADO_VISITA','visitStatus'],['FECHA_FIN_VISITA','visitEndDate'],['HORA_FIN_VISITA','visitEndTime'],['DURACION_MINUTOS','durationMinutes'],['FECHA_VISITA','visitDate'],['HORA_INICIO_VISITA','visitStartTime'],['HORA_REGISTRO','recordTime'],['HORA_ACTUALIZACION','updatedTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['TIPO_PERSONA','personType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['RUTA_ADJUNTOS','attachmentPaths']];
+    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['EVENTO_SISTEMA','systemEvent'],['ESTADO_VISITA','visitStatus'],['FECHA_FIN_VISITA','visitEndDate'],['HORA_FIN_VISITA','visitEndTime'],['DURACION_MINUTOS','durationMinutes'],['FECHA_VISITA','visitDate'],['HORA_INICIO_VISITA','visitStartTime'],['HORA_REGISTRO','recordTime'],['HORA_ACTUALIZACION','updatedTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['CONDICION_PERSONA','personType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['CORREO_DERIVACION_PRINCIPAL','derivationEmailPrimary'],['CORREO_DERIVACION_ADICIONAL_1','derivationEmailCc1'],['CORREO_DERIVACION_ADICIONAL_2','derivationEmailCc2'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['RUTA_ADJUNTOS','attachmentPaths']];
     for(let i=1;i<=maxAtt;i++)cols.push([`ADJUNTO_${i}`,`__att${i}`]);
     const header=cols.map(c=>csvCell(c[0])).join(';');const rows=[];
     for(const r of fieldRecords){
@@ -1777,9 +1669,8 @@ async function flushPendingDerivations(){
     if(!recs.length){box.innerHTML='<div style="padding:18px 0;color:#64748b;font-size:13px">Aún no hay registros de campo. Vuelve al recorrido si necesitas registrar información antes de finalizar la visita.</div>';return}
     box.innerHTML=recs.map(r=>{
       const rec=recommendationFor(r),title=`${r.recordType}${r.personName?`: ${r.personName}`:''}`,desc=r.note||r.criteria||r.dimension||'Registro sin comentario adicional.';
-      const canDerive=(r.followup==='Requiere seguimiento'||r.followup==='Escalar como incidencia')&&r.derivationStatus!=='Correo enviado';
-      const evidenceLocal=Number(r.evidenceCount||0)>0?`<span class="derive-status">📎 ${Number(r.evidenceCount||0)} evidencia(s) · carga en nube en segundo plano</span>`:'';
-      return `<article class="closure-item" data-closure-id="${escapeHtml(r.recordId)}"><div class="closure-item-top"><h4>${escapeHtml(title)}</h4>${r.nature?`<span class="closure-tag">${escapeHtml(r.nature)}</span>`:''}</div><p>${escapeHtml(desc)}</p><div class="closure-controls"><div class="closure-control"><label class="label-with-info">Recurrencia <button type="button" class="info-btn" aria-label="Información sobre recurrencia" data-info-title="Recurrencia del hallazgo" data-info-text="Ordenada por efecto potencial: Visto en otras sedes indica un patrón que puede ser transversal; Reiterado en esta sede indica que ya ocurrió nuevamente en la misma sede; Nuevo corresponde a un hallazgo identificado por primera vez. Ejemplo: si el mismo problema de conectividad aparece en dos sedes, selecciona Visto en otras sedes.">i</button></label><select data-closure-recurrence="${escapeHtml(r.recordId)}"><option ${r.recurrence==='Visto en otras sedes'?'selected':''}>Visto en otras sedes</option><option ${r.recurrence==='Reiterado en esta sede'?'selected':''}>Reiterado en esta sede</option><option ${r.recurrence==='Nuevo'||!r.recurrence?'selected':''}>Nuevo</option></select></div><div class="closure-control"><label class="label-with-info">Acción posterior <button type="button" class="info-btn" aria-label="Información sobre acción posterior" data-info-title="Acción posterior" data-info-text="Ordenada por nivel de intervención: Escalar como incidencia cuando requiere atención formal y trazabilidad; Requiere seguimiento cuando necesita una acción o verificación posterior; Solo registrar cuando basta conservar la evidencia sin una acción inmediata. Ejemplo: un laboratorio sin conectividad que impide la clase puede escalarse como incidencia.">i</button></label><select data-closure-followup="${escapeHtml(r.recordId)}"><option ${r.followup==='Escalar como incidencia'?'selected':''}>Escalar como incidencia</option><option ${r.followup==='Requiere seguimiento'?'selected':''}>Requiere seguimiento</option><option ${r.followup==='Solo registrar'||!r.followup?'selected':''}>Solo registrar</option></select></div></div><div class="recommend-box"><div class="recommend-head"><div><strong>Área sugerida: ${escapeHtml(rec.area)}</strong><span>${escapeHtml(rec.tip)}</span></div>${canDerive?`<button type="button" class="derive-btn" data-derive-record="${escapeHtml(r.recordId)}">Derivar</button>`:''}</div>${r.derivationStatus?`<span class="derive-status">${escapeHtml(r.derivationStatus)}${r.derivationEmail?` · ${escapeHtml(r.derivationEmail)}`:''}</span>`:''}${evidenceLocal}</div></article>`
+      const canDerive=r.followup==='Requiere seguimiento'||r.followup==='Escalar como incidencia';
+      return `<article class="closure-item" data-closure-id="${escapeHtml(r.recordId)}"><div class="closure-item-top"><h4>${escapeHtml(title)}</h4>${r.nature?`<span class="closure-tag">${escapeHtml(r.nature)}</span>`:''}</div><p>${escapeHtml(desc)}</p><div class="closure-controls"><div class="closure-control"><label class="label-with-info">Recurrencia <button type="button" class="info-btn" aria-label="Información sobre recurrencia" data-info-title="Recurrencia del hallazgo" data-info-text="Ordenada por efecto potencial: Visto en otras sedes indica un patrón que puede ser transversal; Reiterado en esta sede indica que ya ocurrió nuevamente en la misma sede; Nuevo corresponde a un hallazgo identificado por primera vez. Ejemplo: si el mismo problema de conectividad aparece en dos sedes, selecciona Visto en otras sedes.">i</button></label><select data-closure-recurrence="${escapeHtml(r.recordId)}"><option ${r.recurrence==='Visto en otras sedes'?'selected':''}>Visto en otras sedes</option><option ${r.recurrence==='Reiterado en esta sede'?'selected':''}>Reiterado en esta sede</option><option ${r.recurrence==='Nuevo'||!r.recurrence?'selected':''}>Nuevo</option></select></div><div class="closure-control"><label class="label-with-info">Acción posterior <button type="button" class="info-btn" aria-label="Información sobre acción posterior" data-info-title="Acción posterior" data-info-text="Ordenada por nivel de intervención: Escalar como incidencia cuando requiere atención formal y trazabilidad; Requiere seguimiento cuando necesita una acción o verificación posterior; Solo registrar cuando basta conservar la evidencia sin una acción inmediata. Ejemplo: un laboratorio sin conectividad que impide la clase puede escalarse como incidencia.">i</button></label><select data-closure-followup="${escapeHtml(r.recordId)}"><option ${r.followup==='Escalar como incidencia'?'selected':''}>Escalar como incidencia</option><option ${r.followup==='Requiere seguimiento'?'selected':''}>Requiere seguimiento</option><option ${r.followup==='Solo registrar'||!r.followup?'selected':''}>Solo registrar</option></select></div></div><div class="recommend-box"><div class="recommend-head"><div><strong>Área sugerida: ${escapeHtml(rec.area)}</strong><span>${escapeHtml(rec.tip)}</span></div>${canDerive?`<button type="button" class="derive-btn" data-derive-record="${escapeHtml(r.recordId)}">Derivar</button>`:''}</div>${r.derivationStatus?`<span class="derive-status">${escapeHtml(r.derivationStatus)}${r.derivationEmail?` · ${escapeHtml(r.derivationEmail)}`:''}</span>`:''}</div></article>`
     }).join('');
   }
   function openClosure(){
@@ -1816,18 +1707,52 @@ async function flushPendingDerivations(){
 
 $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const record=state.records.find(r=>r.recordId===state.derivationRecordId);if(!record)return;
-  const name=$('#deriveName').value.trim(),email=$('#deriveEmail').value.trim(),message=$('#deriveMessage').value.trim();const area=recommendationFor(record).area;
-  const okName=name.length>2,okEmail=validEmail(email);$('#deriveNameField').classList.toggle('invalid',!okName);$('#deriveEmailField').classList.toggle('invalid',!okEmail);if(!okName||!okEmail)return;
+  const name=$('#deriveName').value.trim(),email=$('#deriveEmail').value.trim(),email2=$('#deriveEmail2').value.trim(),email3=$('#deriveEmail3').value.trim(),message=$('#deriveMessage').value.trim();const area=recommendationFor(record).area;
+  const okName=name.length>2,okEmail=validEmail(email),okEmail2=!email2||validEmail(email2),okEmail3=!email3||validEmail(email3);$('#deriveNameField').classList.toggle('invalid',!okName);$('#deriveEmailField').classList.toggle('invalid',!okEmail);$('#deriveEmail2Field').classList.toggle('invalid',!okEmail2);$('#deriveEmail3Field').classList.toggle('invalid',!okEmail3);if(!okName||!okEmail||!okEmail2||!okEmail3)return;
+  const emails=[email,email2,email3].filter(Boolean).filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i);
   const btn=$('#confirmDeriveBtn');btn.disabled=true;const originalText=btn.textContent;btn.textContent='Enviando…';
   const subject=`Ruta SISE · Derivación ${record.recordId}`;
   const body=buildDerivationMail(record,name,area,message);
-  const payload={to:email,name,subject,body,area,recordId:record.recordId,sender:{name:record.visitorName||'',email:record.visitorEmail||''},record:{recordId:record.recordId,recordType:record.recordType,dimension:record.dimension,nature:record.nature,recurrence:record.recurrence,followup:record.followup,note:record.note,criteria:record.criteria,campus:record.campus,modality:record.modality,platform:record.platform,virtualSession:record.virtualSession,visitDate:record.visitDate,recordTime:record.recordTime}};
-  record.derivationArea=area;record.derivationName=name;record.derivationEmail=email;record.derivationAt=new Date().toISOString();record.derivationStatus='Correo enviado';
+  const payload={
+    to:emails.join(','),
+    cc:[email2,email3].filter(Boolean).join(','),
+    recipients:emails,
+    name,
+    subject,
+    body,
+    area,
+    recordId:record.recordId,
+    sender:{name:record.visitorName||'',email:record.visitorEmail||''},
+    record:{
+      recordId:record.recordId,recordType:record.recordType,personType:record.personType,personName:record.personName,personCode:record.personCode,dimension:record.dimension,nature:record.nature,
+      recurrence:record.recurrence,followup:record.followup,note:record.note,criteria:record.criteria,campus:record.campus,modality:record.modality,
+      platform:record.platform,virtualSession:record.virtualSession,visitDate:record.visitDate,recordTime:record.recordTime
+    },
+    attachments:(record.attachmentRefs||[]).map(a=>({name:a.name||'',type:a.type||'',id:a.id||''}))
+  };
+  record.derivationArea=area;record.derivationName=name;record.derivationEmail=emails.join(' | ');record.derivationEmailPrimary=email;record.derivationEmailCc1=email2;record.derivationEmailCc2=email3;record.derivationAt=new Date().toISOString();
   if(!record.followup||record.followup==='Solo registrar')record.followup='Requiere seguimiento';
-  persistDraft();persistUserHistory(record);closeDerivation();renderClosure();showToast('Derivación registrada como enviada.');
-  // Envío en segundo plano. La interfaz no depende de la respuesta del script.
-  if(navigator.onLine&&(RUTA_SISE_CONFIG.emailEndpoint||getAppsScriptEndpoint()))postDerivation(payload).catch(err=>console.warn('Ruta SISE: envío de correo en segundo plano',err));
-  btn.disabled=false;btn.textContent=originalText;
+  try{
+    if(!navigator.onLine){
+      record.derivationStatus='Pendiente de envío (sin conexión)';
+      queueDerivation({queueId:`${record.recordId}-${email}`,recordId:record.recordId,payload,createdAt:new Date().toISOString()});
+      persistDraft();persistUserHistory(record);closeDerivation();renderClosure();showToast('Derivación guardada. Se enviará automáticamente cuando vuelva internet.');
+      return;
+    }
+    if(!(RUTA_SISE_CONFIG.emailEndpoint||getAppsScriptEndpoint())){
+      record.derivationStatus='Pendiente de integración de correo';
+      queueDerivation({queueId:`${record.recordId}-${email}`,recordId:record.recordId,payload,createdAt:new Date().toISOString()});
+      persistDraft();persistUserHistory(record);closeDerivation();renderClosure();showToast('La derivación quedó registrada. Falta conectar el servicio institucional de correo para enviarla directamente.');
+      return;
+    }
+    await postDerivation(payload);
+    record.derivationStatus='Correo enviado';record.derivationAt=new Date().toISOString();
+    persistDraft();persistUserHistory(record);closeDerivation();renderClosure();showToast('Derivación enviada directamente desde Ruta SISE.');
+  }catch(err){
+    record.derivationStatus='Pendiente de reintento';
+    queueDerivation({queueId:`${record.recordId}-${email}`,recordId:record.recordId,payload,createdAt:new Date().toISOString(),lastError:String(err?.message||err)});
+    persistDraft();persistUserHistory(record);closeDerivation();renderClosure();showToast('No se pudo enviar ahora. Quedó en cola para reintento automático.');
+  }finally{btn.disabled=false;btn.textContent=originalText;}
 });
 
 // Audio + transcripción multiplataforma (Android + iPhone/iPad)
@@ -2169,7 +2094,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',updateHeaderIdentity);el.addEventListener('change',updateHeaderIdentity)}
 });
-restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>{flushRemoteQueue();flushSupabaseRecordQueue();processEvidenceQueue();},700);
+restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>flushRemoteQueue(),700);
 
 function openExitModal(){
   const active=state.visitStart&&!state.visitClosed;
@@ -2263,11 +2188,10 @@ $('#newVisitBtn')?.addEventListener('click',resetForNewVisit);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#exitModal')?.classList.contains('open'))closeExitModal();if(e.key==='Escape'&&$('#historyModal')?.classList.contains('open'))closeHistory();if(e.key==='Escape'&&$('#deriveModal')?.classList.contains('open'))closeDerivation()});
 
 
-  // Evidencias: cola persistente en IndexedDB. No requiere Service Worker.
-  window.addEventListener('online',()=>{processEvidenceQueue();flushSupabaseRecordQueue()});
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){processEvidenceQueue();flushSupabaseRecordQueue()}});
-  window.addEventListener('pageshow',()=>setTimeout(()=>{processEvidenceQueue();flushSupabaseRecordQueue()},350));
-  setInterval(()=>{if(navigator.onLine){processEvidenceQueue();flushSupabaseRecordQueue()}},15000);
+  // Permite abrir nuevamente la aplicación sin internet después de la primera carga en HTTPS.
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  }
 </script>
 </body>
 </html>
