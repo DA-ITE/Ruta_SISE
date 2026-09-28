@@ -939,7 +939,7 @@
 const RUTA_SISE_CONFIG = Object.assign({
   // Pega aqui la URL /exec de tu Web App de Google Apps Script.
   // Esta única URL centraliza: guardado de registros, historial y derivaciones por correo.
-  appsScriptEndpoint:'',
+  appsScriptEndpoint:'https://script.google.com/macros/s/AKfycbyGNH9mMO0-3jE1IoaRN_HuGac1FdSw_p7Nv5FbQFVCJEFpHYn9cbuobO3AqI41QUwZ/exec',
   emailEndpoint:'', // opcional: si queda vacío usa appsScriptEndpoint
   emailTimeoutMs:12000,
   transcriptionEndpoint:'',
@@ -1714,8 +1714,8 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const subject=`Ruta SISE · Derivación ${record.recordId}`;
   const body=buildDerivationMail(record,name,area,message);
   const payload={
-    to:emails.join(','),
-    cc:[email2,email3].filter(Boolean).join(','),
+    to:email,
+    cc:[email2,email3].filter(Boolean).filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i && v.toLowerCase()!==email.toLowerCase()).join(','),
     recipients:emails,
     name,
     subject,
