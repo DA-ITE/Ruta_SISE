@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Ruta SISE · SISE v47</title>
+  <title>Ruta SISE · SISE v53</title>
   <style>
     :root{
       --sise:#c8173e;
@@ -564,6 +564,7 @@
                   <option>Gestión Curricular</option>
                   <option>Jefatura Sedes y Experiencia</option>
                   <option>Jefatura de Escuela</option>
+                  <option>Secretaría</option>
                 </select>
                 <span class="arrow">⌄</span>
               </div>
@@ -575,12 +576,14 @@
                 <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                 <select id="role">
                   <option value="">Selecciona un rol</option>
-                  <option>Jefe de sedes y experiencia</option>
+                  <option>Jefe Área</option>
+                  <option>Analista</option>
+                  <option>Coordinador escuela</option>
+                  <option>Responsable</option>
                   <option>Jefe de escuela</option>
-                  <option>Representante de Gestión Docente</option>
-                  <option>Representante de Innovación y Transformación Educativa</option>
-                  <option>Representante de Gestión Curricular</option>
-                  <option>Representante de Jefatura Sedes y Experiencia</option>
+                  <option>Diseñador instruccional</option>
+                  <option>Gerente</option>
+                  <option>Docente</option>
                 </select>
                 <span class="arrow">⌄</span>
               </div>
@@ -1075,8 +1078,8 @@ async function flushPendingDerivations(){
     const cells=[
       ['ID de registro',x.recordId],['Tipo de registro',x.recordType],['Fecha / hora',[x.visitDate,x.recordTime].filter(Boolean).join(' ')],['Sede',x.campus],
       ['Modalidad',x.modality],['Área visitante',x.visitorArea],['Programa / carrera',x.program],['Curso / asignatura',x.course],['Ciclo',x.cycle],['Turno',x.turn],
-      ['Aula / sección',x.section],['Contexto / referencia',x.reference],['Condición / tipo',x.personType],['Persona',x.personName],['Código / DNI',x.personCode],['Dimensión',x.dimension],['Qué observaste',x.criteria],
-      ['Naturaleza',x.nature],['Recurrencia',x.recurrence],['Acción posterior',x.followup],['Área derivación',x.derivationArea],['Correos derivación',x.derivationEmail],['Estado derivación',x.derivationStatus],['Evidencias',x.evidenceCount||0]
+      ['Aula / sección',x.section],['Contexto / referencia',x.reference],['Persona',x.personName],['Código / DNI',x.personCode],['Dimensión',x.dimension],['Qué observaste',x.criteria],
+      ['Naturaleza',x.nature],['Recurrencia',x.recurrence],['Acción posterior',x.followup],['Área derivación',x.derivationArea],['Estado derivación',x.derivationStatus],['Evidencias',x.evidenceCount||0]
     ].filter(c=>String(c[1]??'').trim()!=='');
     return `<div class="history-detail-grid">${cells.map(c=>`<div class="history-detail-cell"><small>${escapeHtml(c[0])}</small><strong>${escapeHtml(c[1])}</strong></div>`).join('')}${x.note?`<div class="history-detail-cell history-detail-note"><small>Nota</small><strong>${escapeHtml(x.note)}</strong></div>`:''}${x.transcript?`<div class="history-detail-cell history-detail-note"><small>Transcripción</small><strong>${escapeHtml(x.transcript)}</strong></div>`:''}</div>`;
   }
@@ -1430,7 +1433,7 @@ async function flushPendingDerivations(){
     if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){} state.audioObjectUrl='';}
     $('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.'; $('#audioPlayback').style.display='none'; $('#audioPlayback').removeAttribute('src');
     state.speechBaseText='';state.speechFinalText='';state.speechInterimText='';state.speechFatal=false;
-    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldStudentStatus')?.classList.remove('invalid'); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null; $('#saveCapture').textContent='Cerrar y registrar';
+    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null; $('#saveCapture').textContent='Cerrar y registrar';
   }
   function openCapture(action,keepEdit=false){
     if(!keepEdit)resetCaptureForm(); state.currentAction=action;
@@ -1440,13 +1443,12 @@ async function flushPendingDerivations(){
     $('#criteriaTitle').textContent=action==='Estudiante'||action==='Docente'?'¿Qué tema apareció en la conversación?':'¿Qué observaste?';
     $('#criteriaChips').innerHTML=(chipsByAction[action]||[]).map(x=>`<button type="button" class="chip">${escapeHtml(x)}</button>`).join(''); bindChipGroup('#criteriaChips',syncCriteriaOther); syncCriteriaOther();
     applyContextFields(action); renderDimensionOptions(action);
-    const person=action==='Estudiante'||action==='Docente'; $('#personSection').classList.toggle('hidden',!person); if(!person)$('#fieldStudentStatus')?.classList.add('hidden');
+    const person=action==='Estudiante'||action==='Docente'; $('#personSection').classList.toggle('hidden',!person);
     if(person){
       const isStudent=action==='Estudiante'; $('#personKicker').textContent='Persona escuchada'; $('#personHeading').textContent=isStudent?'Datos del estudiante':'Datos del docente';
-      $('#personHelp').textContent=isStudent?'Indica primero si la persona es estudiante o egresado. Estos datos quedarán segmentados para el consolidado.':'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del docente.';
-      $('#fieldStudentStatus').classList.toggle('hidden',!isStudent);
-      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
-      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
+      $('#personHelp').textContent=isStudent?'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del estudiante.':'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del docente.';
+      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
+      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
     }
     markVisibleCaptureFieldsRequired();
     document.body.classList.add('capture-open');
@@ -1458,7 +1460,6 @@ async function flushPendingDerivations(){
   function bindChipGroup(sel,onChange){$$(sel+' .chip').forEach(ch=>ch.addEventListener('click',()=>{ch.classList.toggle('active');if(onChange)onChange(ch)}))}
   function syncCriteriaOther(){const active=$$('#criteriaChips .chip.active').some(c=>c.textContent.trim()==='Otro');$('#criteriaOtherWrap')?.classList.toggle('hidden',!active);if(!active){$('#criteriaOther').value='';$('#criteriaOtherWrap')?.classList.remove('invalid')}}
   bindChipGroup('#natureChips');
-  $$('#studentStatusChips .chip').forEach(ch=>ch.addEventListener('click',()=>{ $$('#studentStatusChips .chip').forEach(x=>x.classList.remove('active')); ch.classList.add('active'); $('#fieldStudentStatus')?.classList.remove('invalid'); }));
 
   // Evidence files / mobile camera
   $('#takePhotoBtn').addEventListener('click',()=>$('#cameraInput').click());
@@ -1541,7 +1542,6 @@ async function flushPendingDerivations(){
     });
     const personVisible=!$('#personSection').classList.contains('hidden');
     if(personVisible){
-      if(!$('#fieldStudentStatus').classList.contains('hidden')){const statusOk=!!$('#studentStatusChips .chip.active');$('#fieldStudentStatus').classList.toggle('invalid',!statusOk);if(!statusOk){ok=false;if(!first)first=$('#studentStatusChips .chip')}}
       [['#personName','Registra el nombre de la persona escuchada.'],['#personCode','Registra el código institucional o DNI.']].forEach(([sel,msg])=>{const el=$(sel),yes=String(el.value||'').trim().length>0;setFieldInvalid(el,!yes,msg);if(!yes){ok=false;if(!first)first=el}});
     }
     const dim=$('#captureDimension'),dimOk=!!dim.value;setFieldInvalid(dim,!dimOk,'Selecciona una dimensión.');if(!dimOk){ok=false;if(!first)first=dim}
@@ -1579,9 +1579,9 @@ async function flushPendingDerivations(){
       visitorName:state.visitMeta.visitorName, visitorEmail:state.visitMeta.visitorEmail, visitorArea:state.visitMeta.area, visitorRole:state.visitMeta.role,
       campus:state.visitMeta.campus, modality:state.visitMeta.modality, platform:state.visitMeta.platform, virtualSession:state.visitMeta.sessionId,
       address:state.visitMeta.modality==='Presencial'?(state.location?.address||getCampusOfflineAddress()||''):'', latitude:state.visitMeta.modality==='Presencial'?(state.location?.lat??''):'', longitude:state.visitMeta.modality==='Presencial'?(state.location?.lng??''):'', accuracyM:state.visitMeta.modality==='Presencial'&&state.location?.accuracy?Math.round(state.location.accuracy):'',
-      recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?($('#studentStatusChips .chip.active')?.dataset.studentStatus||''):'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
+      recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?'Estudiante':'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
       program:$('#contextProgramField').classList.contains('hidden')?'':$('#captureProgram').value.trim(), course:$('#contextCourseField').classList.contains('hidden')?'':$('#captureCourse').value.trim(), cycle:$('#contextCycleField').classList.contains('hidden')?'':$('#captureCycle').value.trim(), turn:$('#contextTurnField').classList.contains('hidden')?'':$('#captureTurn').value, section:$('#contextSectionField').classList.contains('hidden')?'':$('#captureSection').value.trim(), space:$('#contextSpaceField').classList.contains('hidden')?'':$('#captureSpace').value.trim(), reference:$('#contextReferenceField').classList.contains('hidden')?'':$('#captureReference').value.trim(),
-      dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationEmailPrimary:editing?.derivationEmailPrimary||'', derivationEmailCc1:editing?.derivationEmailCc1||'', derivationEmailCc2:editing?.derivationEmailCc2||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
+      dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
       note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, time:editing?.time||now
     };
     if(editing){const i=state.records.findIndex(r=>r.recordId===recordId);state.records[i]=record;showToast(`Registro ${recordId} actualizado.`)}else{state.records.unshift(record);if(action==='Aula')state.counters.rooms++;showToast(`Registro ${recordId} guardado.`)}
@@ -1597,7 +1597,7 @@ async function flushPendingDerivations(){
   }
 
   $('#recentList').addEventListener('click',async e=>{const btn=e.target.closest('[data-edit-record]');if(!btn)return;const record=state.records.find(r=>r.recordId===btn.dataset.editRecord);if(!record)return;openCapture(record.actionKey||'Hallazgo');state.editingRecordId=record.recordId;$('#sheetEyebrow').textContent='Editar registro';$('#saveCapture').textContent='Actualizar registro';
-    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';$$('#studentStatusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.studentStatus===(record.personType||'')));$('#captureNote').value=record.note||'';$('#captureDimension').value=record.dimension||'';
+    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';$('#captureNote').value=record.note||'';$('#captureDimension').value=record.dimension||'';
     const criteriaParts=(record.criteria||'').split(' | ');$$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',c.textContent==='Otro'?criteriaParts.some(x=>x.startsWith('Otro')):criteriaParts.includes(c.textContent)));$('#criteriaOther').value=record.criteriaOther||((criteriaParts.find(x=>x.startsWith('Otro: '))||'').replace(/^Otro:\s*/,''));syncCriteriaOther();$$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent===record.nature));
     if(record.transcript){$('#transcriptBox').textContent=record.transcript} state.currentAttachments=await loadAttachments(record);renderAttachments();
   });
@@ -1623,7 +1623,7 @@ async function flushPendingDerivations(){
       const list=await attachmentFilesForRecord(r);allAtt[r.recordId]=list;maxAtt=Math.max(maxAtt,list.length);
       for(const item of list){const blob=attBlob(item.att);if(blob)zipFiles.push({name:item.path,data:new Uint8Array(await blob.arrayBuffer())})}
     }
-    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['EVENTO_SISTEMA','systemEvent'],['ESTADO_VISITA','visitStatus'],['FECHA_FIN_VISITA','visitEndDate'],['HORA_FIN_VISITA','visitEndTime'],['DURACION_MINUTOS','durationMinutes'],['FECHA_VISITA','visitDate'],['HORA_INICIO_VISITA','visitStartTime'],['HORA_REGISTRO','recordTime'],['HORA_ACTUALIZACION','updatedTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['CONDICION_PERSONA','personType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['CORREO_DERIVACION_PRINCIPAL','derivationEmailPrimary'],['CORREO_DERIVACION_ADICIONAL_1','derivationEmailCc1'],['CORREO_DERIVACION_ADICIONAL_2','derivationEmailCc2'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['RUTA_ADJUNTOS','attachmentPaths']];
+    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['EVENTO_SISTEMA','systemEvent'],['ESTADO_VISITA','visitStatus'],['FECHA_FIN_VISITA','visitEndDate'],['HORA_FIN_VISITA','visitEndTime'],['DURACION_MINUTOS','durationMinutes'],['FECHA_VISITA','visitDate'],['HORA_INICIO_VISITA','visitStartTime'],['HORA_REGISTRO','recordTime'],['HORA_ACTUALIZACION','updatedTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['TIPO_PERSONA','personType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['RUTA_ADJUNTOS','attachmentPaths']];
     for(let i=1;i<=maxAtt;i++)cols.push([`ADJUNTO_${i}`,`__att${i}`]);
     const header=cols.map(c=>csvCell(c[0])).join(';');const rows=[];
     for(const r of fieldRecords){
@@ -1724,7 +1724,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
     recordId:record.recordId,
     sender:{name:record.visitorName||'',email:record.visitorEmail||''},
     record:{
-      recordId:record.recordId,recordType:record.recordType,personType:record.personType,personName:record.personName,personCode:record.personCode,dimension:record.dimension,nature:record.nature,
+      recordId:record.recordId,recordType:record.recordType,dimension:record.dimension,nature:record.nature,
       recurrence:record.recurrence,followup:record.followup,note:record.note,criteria:record.criteria,campus:record.campus,modality:record.modality,
       platform:record.platform,virtualSession:record.virtualSession,visitDate:record.visitDate,recordTime:record.recordTime
     },
