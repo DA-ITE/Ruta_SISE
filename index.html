@@ -462,6 +462,11 @@
       #captureSheet .chip{padding:9px 12px;font-size:13px}
     }
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co',publishableKey:'sb_publishable_6O0i55BDvqRBN5Zw_Hvrbw_SfVJdpO2',bucket:'ruta-sise-evidencias'};
+</script>
 </head>
 <body>
 <div class="app">
@@ -686,7 +691,7 @@
             <div><h3 class="title-with-info">¿Qué estás haciendo ahora?
               <button type="button" class="info-btn" aria-label="Información sobre tipos de registro" data-info-title="Tipos de registro" data-info-text="Elige la opción que mejor representa lo que estás recogiendo. Observar clase es para una sesión académica; Observar sede para espacios, servicios y operación; Voz del estudiante y Voz del docente para conversaciones; Otros hallazgos solo para situaciones que no encajan en las cuatro opciones anteriores.">i</button>
             </h3><p>Selecciona una opción. El formulario se adapta y muestra únicamente los campos y dimensiones pertinentes.</p></div>
-            <div class="dashboard-actions"><button type="button" class="export-btn" id="exportExcel" title="Descargar registros y evidencias">⇩ Exportar registros y adjuntos</button></div>
+            <div class="dashboard-actions"><button type="button" class="export-btn" id="syncPendingEvidenceBtn" title="Subir evidencias pendientes guardadas en este navegador">↻ Sincronizar evidencias pendientes</button><button type="button" class="export-btn" id="exportExcel" title="Descargar registros y evidencias">⇩ Exportar registros y adjuntos</button></div>
           </div>
           <div class="quick-grid">
             <button class="quick-action" data-action="Aula"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h8"/></svg></span><span><strong>Observar clase</strong><small>Sesión presencial o virtual</small></span></button>
@@ -931,11 +936,67 @@
     speechFatal:false,
     audioObjectUrl:'',
     editingRecordId:null,
-    attachmentMemory:{}
+    attachmentMemory:{},
+    supabaseClient:null,
+    supabaseUser:null,
+    evidenceSyncRunning:false
   };
 
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
+
+
+  function supaCfg(){return window.RUTA_SISE_SUPABASE_CONFIG||{}}
+  function supaClient(){
+    const c=supaCfg();
+    if(!window.supabase?.createClient||!c.url||!c.publishableKey)return null;
+    if(!state.supabaseClient)state.supabaseClient=window.supabase.createClient(c.url,c.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    return state.supabaseClient;
+  }
+  async function ensureSupaUser(){
+    const sb=supaClient();if(!sb)return null;
+    if(state.supabaseUser)return state.supabaseUser;
+    try{
+      const {data}=await sb.auth.getSession();
+      if(data?.session?.user){state.supabaseUser=data.session.user;return state.supabaseUser}
+      const res=await sb.auth.signInAnonymously();
+      if(res.error)throw res.error;
+      state.supabaseUser=res.data?.user||res.data?.session?.user||null;return state.supabaseUser;
+    }catch(e){console.warn('Supabase auth:',e);return null}
+  }
+  function safeEvidenceName(v){return String(v||'archivo').replace(/[^A-Za-z0-9._-]+/g,'_').slice(0,120)}
+  async function uploadEvidenceRow(row){
+    const sb=supaClient(),user=await ensureSupaUser();if(!sb||!user||!row?.blob||!row?.recordId)return false;
+    const cfg=supaCfg(), objectPath=`${user.id}/${row.recordId}/${row.id}_${safeEvidenceName(row.name)}`;
+    const up=await sb.storage.from(cfg.bucket||'ruta-sise-evidencias').upload(objectPath,row.blob,{contentType:row.type||'application/octet-stream',upsert:true});
+    if(up.error)throw up.error;
+    const meta={evidence_id:row.id,record_id:row.recordId,owner_uid:user.id,bucket:cfg.bucket||'ruta-sise-evidencias',object_path:objectPath,name:row.name||'archivo',type:row.type||'',size:Number(row.size||row.blob.size||0),uploaded_at:new Date().toISOString()};
+    const db=await sb.from('ruta_sise_evidences').upsert(meta,{onConflict:'evidence_id'});
+    if(db.error)throw db.error;
+    return true;
+  }
+  async function allStoredEvidenceRows(){
+    try{const db=await openAttachmentDB();const rows=await new Promise((resolve,reject)=>{const tx=db.transaction('attachments','readonly'),req=tx.objectStore('attachments').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});db.close();return rows}catch(e){return []}
+  }
+  async function syncStoredEvidenceToSupabase(){
+    if(state.evidenceSyncRunning||!navigator.onLine)return;
+    state.evidenceSyncRunning=true;
+    try{
+      const rows=await allStoredEvidenceRows();if(!rows.length)return;
+      let ok=0;for(const row of rows){try{if(await uploadEvidenceRow(row))ok++}catch(e){console.warn('Evidencia pendiente',row?.id,e)}}
+      if(ok)console.info(`Ruta SISE: ${ok} evidencia(s) sincronizada(s) con Supabase.`);
+    }finally{state.evidenceSyncRunning=false}
+  }
+  async function syncRecordEvidenceToSupabase(recordId){
+    let rows=[];let uploaded=0;let lastError='';
+    try{
+      const db=await openAttachmentDB();
+      rows=await new Promise((resolve,reject)=>{const tx=db.transaction('attachments','readonly'),store=tx.objectStore('attachments'),idx=store.index('recordId'),req=idx.getAll(IDBKeyRange.only(recordId));req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});
+      db.close();
+      for(const row of rows){try{if(await uploadEvidenceRow(row))uploaded++}catch(e){lastError=String(e?.message||e);console.warn('No se pudo subir evidencia',e)}}
+    }catch(e){lastError=String(e?.message||e)}
+    return {total:rows.length,uploaded,ok:rows.length>0&&uploaded===rows.length,error:lastError};
+  }
 
 
 // Configuración de integración institucional.
@@ -1584,11 +1645,20 @@ async function flushPendingDerivations(){
       recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?'Estudiante':'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
       program:$('#contextProgramField').classList.contains('hidden')?'':$('#captureProgram').value.trim(), course:$('#contextCourseField').classList.contains('hidden')?'':$('#captureCourse').value.trim(), cycle:$('#contextCycleField').classList.contains('hidden')?'':$('#captureCycle').value.trim(), turn:$('#contextTurnField').classList.contains('hidden')?'':$('#captureTurn').value, section:$('#contextSectionField').classList.contains('hidden')?'':$('#captureSection').value.trim(), space:$('#contextSpaceField').classList.contains('hidden')?'':$('#captureSpace').value.trim(), reference:$('#contextReferenceField').classList.contains('hidden')?'':$('#captureReference').value.trim(),
       dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
-      note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, time:editing?.time||now
+      note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, evidenceSyncStatus:attachmentRefs.length?'Pendiente de sincronización':'Sin evidencias', time:editing?.time||now
     };
     if(editing){const i=state.records.findIndex(r=>r.recordId===recordId);state.records[i]=record;showToast(`Registro ${recordId} actualizado.`)}else{state.records.unshift(record);if(action==='Aula')state.counters.rooms++;showToast(`Registro ${recordId} guardado.`)}
     try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
     persistUserHistory(record);
+    if(attachmentRefs.length){
+      setTimeout(async()=>{
+        const res=await syncRecordEvidenceToSupabase(recordId);
+        record.evidenceSyncStatus=res.ok?'Sincronizada en nube':'Pendiente de sincronización';
+        persistUserHistory(record);
+        if(res.ok)showToast(`Evidencia${res.uploaded===1?'':'s'} sincronizada${res.uploaded===1?'':'s'} en la nube.`);
+        else console.warn('Evidencia pendiente de sincronización:',res.error||'sin detalle');
+      },120);
+    }
     state.editingRecordId=null; updateCounters(); renderRecent(); closeCapture();
   });
 
@@ -1605,6 +1675,35 @@ async function flushPendingDerivations(){
   });
 
   // Excel-friendly package with attachments: one column per field, UTF-8 + semicolon delimiter.
+  $('#syncPendingEvidenceBtn')?.addEventListener('click',async()=>{
+    const btn=$('#syncPendingEvidenceBtn');
+    if(!btn||btn.disabled)return;
+    const original=btn.textContent;
+    btn.disabled=true;btn.textContent='Sincronizando…';
+    try{
+      if(!navigator.onLine){showToast('Sin conexión. Conéctate a internet y vuelve a intentar.');return}
+      const rows=await allStoredEvidenceRows();
+      if(!rows.length){showToast('No hay evidencias pendientes guardadas en este navegador.');return}
+      const byRecord=new Map();
+      rows.forEach(row=>{if(row?.recordId){const arr=byRecord.get(row.recordId)||[];arr.push(row);byRecord.set(row.recordId,arr)}});
+      let uploaded=0,failed=0;
+      for(const row of rows){
+        try{if(await uploadEvidenceRow(row))uploaded++;else failed++}catch(e){failed++;console.warn('No se pudo sincronizar evidencia',row?.id,e)}
+      }
+      for(const [recordId,items] of byRecord.entries()){
+        const record=state.records.find(r=>r.recordId===recordId);
+        if(!record)continue;
+        const expected=Number(record.evidenceCount||items.length||0);
+        const result=await syncRecordEvidenceToSupabase(recordId);
+        record.evidenceSyncStatus=(result.ok||result.uploaded>=expected)?'Sincronizada en nube':'Pendiente de sincronización';
+        persistUserHistory(record);
+      }
+      try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
+      renderRecent();
+      showToast(failed?`${uploaded} evidencia(s) sincronizada(s). ${failed} pendiente(s).`:`${uploaded} evidencia(s) sincronizada(s) correctamente.`);
+    }catch(e){console.warn('Sincronización manual de evidencias:',e);showToast('No se pudo completar la sincronización. Vuelve a intentar.');}
+    finally{btn.disabled=false;btn.textContent=original}
+  });
   $('#exportExcel').addEventListener('click',downloadExcelData);
   function sanitizeFileName(name){return String(name||'archivo').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_')}
   function csvCell(v){return '"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"'}
@@ -2096,7 +2195,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',updateHeaderIdentity);el.addEventListener('change',updateHeaderIdentity)}
 });
-restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>flushRemoteQueue(),700);
+restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>flushRemoteQueue(),700);setTimeout(()=>syncStoredEvidenceToSupabase(),1200);window.addEventListener('online',()=>setTimeout(()=>syncStoredEvidenceToSupabase(),500));
 
 function openExitModal(){
   const active=state.visitStart&&!state.visitClosed;
