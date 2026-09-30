@@ -691,7 +691,7 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
             <div><h3 class="title-with-info">¿Qué estás haciendo ahora?
               <button type="button" class="info-btn" aria-label="Información sobre tipos de registro" data-info-title="Tipos de registro" data-info-text="Elige la opción que mejor representa lo que estás recogiendo. Observar clase es para una sesión académica; Observar sede para espacios, servicios y operación; Voz del estudiante y Voz del docente para conversaciones; Otros hallazgos solo para situaciones que no encajan en las cuatro opciones anteriores.">i</button>
             </h3><p>Selecciona una opción. El formulario se adapta y muestra únicamente los campos y dimensiones pertinentes.</p></div>
-            <div class="dashboard-actions"><button type="button" class="export-btn" id="syncPendingEvidenceBtn" title="Subir evidencias pendientes guardadas en este navegador">↻ Sincronizar evidencias pendientes</button><button type="button" class="export-btn" id="exportExcel" title="Descargar registros y evidencias">⇩ Exportar registros y adjuntos</button></div>
+            <div class="dashboard-actions"><button type="button" class="export-btn" id="exportExcel" title="Descargar registros y evidencias">⇩ Exportar registros y adjuntos</button></div>
           </div>
           <div class="quick-grid">
             <button class="quick-action" data-action="Aula"><span class="qa-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6M7 16h8"/></svg></span><span><strong>Observar clase</strong><small>Sesión presencial o virtual</small></span></button>
@@ -800,6 +800,7 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     <div class="history-scroll"><div class="history-list" id="historyList"></div></div>
   </div>
 </div>
+<input type="file" id="historyEvidenceInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" />
 
 <div class="info-modal-backdrop" id="deriveModal" aria-hidden="true">
   <div class="info-modal-card derive-modal-card" role="dialog" aria-modal="true" aria-labelledby="deriveModalTitle">
@@ -939,7 +940,8 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     attachmentMemory:{},
     supabaseClient:null,
     supabaseUser:null,
-    evidenceSyncRunning:false
+    evidenceSyncRunning:false,
+    historyEvidenceRecordId:''
   };
 
   const $ = s => document.querySelector(s);
@@ -996,6 +998,55 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
       for(const row of rows){try{if(await uploadEvidenceRow(row))uploaded++}catch(e){lastError=String(e?.message||e);console.warn('No se pudo subir evidencia',e)}}
     }catch(e){lastError=String(e?.message||e)}
     return {total:rows.length,uploaded,ok:rows.length>0&&uploaded===rows.length,error:lastError};
+  }
+
+  async function storeAdditionalEvidenceRows(recordId,files){
+    const rows=[];if(!recordId||!files?.length)return rows;
+    const stamp=Date.now();
+    try{
+      const db=await openAttachmentDB();
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('attachments','readwrite'),store=tx.objectStore('attachments');
+        files.forEach((file,i)=>{
+          const id=`${recordId}__REC_${stamp}_${String(i+1).padStart(2,'0')}`;
+          const row={id,recordId,name:file.name||`evidencia_${i+1}`,type:file.type||'application/octet-stream',size:file.size||0,blob:file};
+          rows.push(row);store.put(row);
+        });
+        tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+      });
+      db.close();
+    }catch(e){
+      files.forEach((file,i)=>rows.push({id:`${recordId}__REC_MEM_${stamp}_${i+1}`,recordId,name:file.name||`evidencia_${i+1}`,type:file.type||'application/octet-stream',size:file.size||0,blob:file}));
+    }
+    return rows;
+  }
+
+  async function uploadHistoryEvidence(record,files){
+    if(!record?.recordId||!files?.length)return {uploaded:0,total:0};
+    if(!navigator.onLine)throw new Error('Sin conexión a internet.');
+    const user=await ensureSupaUser();
+    if(!user)throw new Error('Supabase no autorizó la carga. Verifica que Anonymous Sign-Ins esté habilitado.');
+    const rows=await storeAdditionalEvidenceRows(record.recordId,[...files]);
+    let uploaded=0;const refs=[];
+    for(const row of rows){
+      await uploadEvidenceRow(row);uploaded++;
+      refs.push({id:row.id,name:row.name,type:row.type,size:row.size});
+    }
+    const existingRefs=Array.isArray(record.attachmentRefs)?record.attachmentRefs:[];
+    const byId=new Map([...existingRefs,...refs].map(x=>[x.id,x]));
+    record.attachmentRefs=[...byId.values()];
+    const oldNames=String(record.evidenceNames||'').split(' | ').map(x=>x.trim()).filter(Boolean);
+    record.evidenceNames=[...new Set([...oldNames,...refs.map(x=>x.name)])].join(' | ');
+    const previous=Number(record.evidenceCount||0);
+    record.evidenceCount=Math.max(previous,record.attachmentRefs.length);
+    record.evidenceSyncStatus='Sincronizada en nube';
+    record.updatedTime=new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
+    const localRecord=state.records.find(r=>r.recordId===record.recordId);
+    if(localRecord&&localRecord!==record)Object.assign(localRecord,record);
+    persistUserHistory(record);
+    try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
+    await flushRemoteQueue();
+    return {uploaded,total:rows.length};
   }
 
 
@@ -1162,7 +1213,7 @@ async function flushPendingDerivations(){
     box.innerHTML=visitKeys.map(key=>{
       const group=grouped[key];const head=group.find(x=>x.systemEvent==='INICIO_VISITA')||group[0];const records=group.filter(x=>x.systemEvent==='REGISTRO_CAMPO');
       const date=head?.visitDate||'',campus=head?.campus||'Sede no indicada',modality=head?.modality||'';
-      const recordHtml=records.length?records.map(x=>{const title=x.recordType||'Registro',summary=x.note||x.criteria||x.dimension||'Registro guardado';return `<article class="history-record" data-history-record="${escapeHtml(x.historyId||x.recordId)}"><div class="history-record-top"><div><div class="history-record-title">${escapeHtml(title)}${x.personName?`: ${escapeHtml(x.personName)}`:''}</div><div class="history-record-summary">${escapeHtml(summary)}</div></div><span class="history-record-time">${escapeHtml((x.recordTime||'').slice(0,5))}</span></div><div class="history-record-actions"><button type="button" class="history-action-btn" data-history-view="${escapeHtml(x.historyId||x.recordId)}">Ver detalle</button><button type="button" class="history-action-btn" data-history-download="${escapeHtml(x.historyId||x.recordId)}">⇩ Descargar</button></div><div class="history-detail hidden" id="history-detail-${escapeHtml(x.historyId||x.recordId)}">${historyDetailHtml(x)}</div></article>`}).join(''):'<div class="history-record"><div class="history-record-summary">Esta visita aún no tiene registros de campo guardados.</div></div>';
+      const recordHtml=records.length?records.map(x=>{const title=x.recordType||'Registro',summary=x.note||x.criteria||x.dimension||'Registro guardado';return `<article class="history-record" data-history-record="${escapeHtml(x.historyId||x.recordId)}"><div class="history-record-top"><div><div class="history-record-title">${escapeHtml(title)}${x.personName?`: ${escapeHtml(x.personName)}`:''}</div><div class="history-record-summary">${escapeHtml(summary)}</div></div><span class="history-record-time">${escapeHtml((x.recordTime||'').slice(0,5))}</span></div><div class="history-record-actions"><button type="button" class="history-action-btn" data-history-view="${escapeHtml(x.historyId||x.recordId)}">Ver detalle</button><button type="button" class="history-action-btn" data-history-upload="${escapeHtml(x.historyId||x.recordId)}">↑ Subir evidencia</button><button type="button" class="history-action-btn" data-history-download="${escapeHtml(x.historyId||x.recordId)}">⇩ Descargar</button></div><div class="history-detail hidden" id="history-detail-${escapeHtml(x.historyId||x.recordId)}">${historyDetailHtml(x)}</div></article>`}).join(''):'<div class="history-record"><div class="history-record-summary">Esta visita aún no tiene registros de campo guardados.</div></div>';
       return `<section class="history-visit"><div class="history-visit-head"><div><strong>${escapeHtml(date||'Visita')} · ${escapeHtml(campus)}</strong><span>${escapeHtml([modality,head?.visitorArea].filter(Boolean).join(' · '))}</span></div><div class="history-visit-count">${records.length} registro${records.length===1?'':'s'}</div></div><div>${recordHtml}</div></section>`;
     }).join('');
   }
@@ -1647,17 +1698,19 @@ async function flushPendingDerivations(){
       dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
       note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, evidenceSyncStatus:attachmentRefs.length?'Pendiente de sincronización':'Sin evidencias', time:editing?.time||now
     };
+    let evidenceResult={total:0,uploaded:0,ok:true,error:''};
+    if(attachmentRefs.length){
+      const saveBtn=$('#saveCapture'),saveText=saveBtn.textContent;saveBtn.disabled=true;saveBtn.textContent='Subiendo evidencia…';
+      evidenceResult=await syncRecordEvidenceToSupabase(recordId);
+      record.evidenceSyncStatus=evidenceResult.ok?'Sincronizada en nube':'Pendiente de sincronización';
+      saveBtn.disabled=false;saveBtn.textContent=saveText;
+    }
     if(editing){const i=state.records.findIndex(r=>r.recordId===recordId);state.records[i]=record;showToast(`Registro ${recordId} actualizado.`)}else{state.records.unshift(record);if(action==='Aula')state.counters.rooms++;showToast(`Registro ${recordId} guardado.`)}
     try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
     persistUserHistory(record);
     if(attachmentRefs.length){
-      setTimeout(async()=>{
-        const res=await syncRecordEvidenceToSupabase(recordId);
-        record.evidenceSyncStatus=res.ok?'Sincronizada en nube':'Pendiente de sincronización';
-        persistUserHistory(record);
-        if(res.ok)showToast(`Evidencia${res.uploaded===1?'':'s'} sincronizada${res.uploaded===1?'':'s'} en la nube.`);
-        else console.warn('Evidencia pendiente de sincronización:',res.error||'sin detalle');
-      },120);
+      if(evidenceResult.ok)showToast(`Evidencia${evidenceResult.uploaded===1?'':'s'} sincronizada${evidenceResult.uploaded===1?'':'s'} en la nube.`);
+      else{console.warn('Evidencia pendiente de sincronización:',evidenceResult.error||'sin detalle');showToast('Registro guardado. Evidencia pendiente de nube.');}
     }
     state.editingRecordId=null; updateCounters(); renderRecent(); closeCapture();
   });
@@ -1675,35 +1728,6 @@ async function flushPendingDerivations(){
   });
 
   // Excel-friendly package with attachments: one column per field, UTF-8 + semicolon delimiter.
-  $('#syncPendingEvidenceBtn')?.addEventListener('click',async()=>{
-    const btn=$('#syncPendingEvidenceBtn');
-    if(!btn||btn.disabled)return;
-    const original=btn.textContent;
-    btn.disabled=true;btn.textContent='Sincronizando…';
-    try{
-      if(!navigator.onLine){showToast('Sin conexión. Conéctate a internet y vuelve a intentar.');return}
-      const rows=await allStoredEvidenceRows();
-      if(!rows.length){showToast('No hay evidencias pendientes guardadas en este navegador.');return}
-      const byRecord=new Map();
-      rows.forEach(row=>{if(row?.recordId){const arr=byRecord.get(row.recordId)||[];arr.push(row);byRecord.set(row.recordId,arr)}});
-      let uploaded=0,failed=0;
-      for(const row of rows){
-        try{if(await uploadEvidenceRow(row))uploaded++;else failed++}catch(e){failed++;console.warn('No se pudo sincronizar evidencia',row?.id,e)}
-      }
-      for(const [recordId,items] of byRecord.entries()){
-        const record=state.records.find(r=>r.recordId===recordId);
-        if(!record)continue;
-        const expected=Number(record.evidenceCount||items.length||0);
-        const result=await syncRecordEvidenceToSupabase(recordId);
-        record.evidenceSyncStatus=(result.ok||result.uploaded>=expected)?'Sincronizada en nube':'Pendiente de sincronización';
-        persistUserHistory(record);
-      }
-      try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
-      renderRecent();
-      showToast(failed?`${uploaded} evidencia(s) sincronizada(s). ${failed} pendiente(s).`:`${uploaded} evidencia(s) sincronizada(s) correctamente.`);
-    }catch(e){console.warn('Sincronización manual de evidencias:',e);showToast('No se pudo completar la sincronización. Vuelve a intentar.');}
-    finally{btn.disabled=false;btn.textContent=original}
-  });
   $('#exportExcel').addEventListener('click',downloadExcelData);
   function sanitizeFileName(name){return String(name||'archivo').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,'_')}
   function csvCell(v){return '"'+String(v??'').replace(/"/g,'""').replace(/\r?\n/g,' ')+'"'}
@@ -1802,7 +1826,23 @@ async function flushPendingDerivations(){
   $('#downloadAllHistory')?.addEventListener('click',downloadAllHistory);
   $('#historyList')?.addEventListener('click',async e=>{
     const view=e.target.closest('[data-history-view]');if(view){const id=view.dataset.historyView,detail=document.getElementById(`history-detail-${id}`);if(detail){const hidden=detail.classList.toggle('hidden');view.textContent=hidden?'Ver detalle':'Ocultar detalle';}return}
+    const up=e.target.closest('[data-history-upload]');if(up){state.historyEvidenceRecordId=up.dataset.historyUpload;const input=$('#historyEvidenceInput');if(input){input.value='';input.click();}return}
     const dl=e.target.closest('[data-history-download]');if(dl){await downloadHistoryRecord(findHistoryRecord(dl.dataset.historyDownload));}
+  });
+  $('#historyEvidenceInput')?.addEventListener('change',async e=>{
+    const files=[...(e.target.files||[])];const record=findHistoryRecord(state.historyEvidenceRecordId);if(!record||!files.length)return;
+    const originalSubtitle=$('#historyModalSubtitle').textContent;$('#historyModalSubtitle').textContent=`Subiendo evidencia para ${record.recordId}…`;
+    try{
+      const result=await uploadHistoryEvidence(record,files);
+      remoteHistoryCache=await fetchRemoteHistoryJSONP(currentUserEmail()).catch(()=>remoteHistoryCache);
+      renderHistory();
+      $('#historyModalSubtitle').textContent=`${result.uploaded} evidencia(s) subida(s) correctamente para ${record.recordId}.`;
+      showToast('Evidencia asociada y guardada en la nube.');
+    }catch(err){
+      console.warn('Carga manual de evidencia:',err);
+      $('#historyModalSubtitle').textContent=originalSubtitle;
+      alert('No se pudo subir la evidencia. '+String(err?.message||err));
+    }finally{state.historyEvidenceRecordId='';e.target.value='';}
   });
   $('#closeDeriveModal')?.addEventListener('click',closeDerivation);$('#cancelDeriveBtn')?.addEventListener('click',closeDerivation);$('#deriveModal')?.addEventListener('click',e=>{if(e.target===$('#deriveModal'))closeDerivation()});
 
