@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Ruta SISE · SISE v53</title>
+  <title>Ruta SISE · SISE v61</title>
   <style>
     :root{
       --sise:#c8173e;
@@ -158,7 +158,7 @@
       outline:none;
       transition:.18s ease;
     }
-    .control textarea{min-height:110px;resize:vertical;padding-right:15px}
+    .control textarea{min-height:180px;resize:vertical;padding-right:15px;max-height:none}
     .control input:focus,.control select:focus,.control textarea:focus{border-color:var(--sise);box-shadow:0 0 0 4px rgba(255,14,73,.08)}
     .control select{appearance:none;-webkit-appearance:none;padding-right:44px}
     .control .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#393436;pointer-events:none}
@@ -288,6 +288,9 @@
     .data-tag{background:#f8f6f7;border:1px solid var(--line);border-radius:10px;padding:9px}.data-tag small{display:block;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;font-size:9px;color:var(--muted)}.data-tag strong{display:block;font-size:13px;margin-top:2px}
     .field.compact{margin-bottom:12px}
     .control input.no-icon,.control select.no-icon{padding-left:14px}
+
+    /* Multi-item / offline draft */
+    .item-card{border:1px solid var(--line);border-radius:13px;background:#fff;margin-bottom:9px;overflow:hidden}.item-card.item-editing{border-color:var(--sise);box-shadow:0 0 0 2px rgba(255,14,73,.08)}.item-card-head{width:100%;border:0;background:#faf8f9;padding:12px 13px;display:flex;justify-content:space-between;align-items:center;text-align:left;font-weight:800}.item-card-body{padding:12px 13px;border-top:1px solid var(--line);font-size:13px;line-height:1.45;color:var(--muted)}.item-card-body strong{color:var(--ink)}.pending-badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#fff8e8;color:#8a6400;font-size:11px;font-weight:800}.record-time-note{font-size:11px;color:var(--muted);margin-top:8px}
 
     /* Session close */
     .exit-modal-backdrop{position:fixed;inset:0;background:rgba(20,15,17,.48);backdrop-filter:blur(4px);z-index:140;display:grid;place-items:center;padding:20px;opacity:0;pointer-events:none;transition:.2s ease}
@@ -463,10 +466,14 @@
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co',publishableKey:'sb_publishable_6O0i55BDvqRBN5Zw_Hvrbw_SfVJdpO2',bucket:'ruta-sise-evidencias'};
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.RUTA_SISE_SUPABASE_CONFIG={
+      url:'https://wsymamqhcshmdtbpwemq.supabase.co',
+      publishableKey:'sb_publishable_6O0i55BDvqRBN5Zw_Hvrbw_SfVJdpO2',
+      bucket:'ruta-sise-evidencias'
+    };
+  </script>
 </head>
 <body>
 <div class="app">
@@ -800,7 +807,6 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     <div class="history-scroll"><div class="history-list" id="historyList"></div></div>
   </div>
 </div>
-<input type="file" id="historyEvidenceInput" class="hidden" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv" />
 
 <div class="info-modal-backdrop" id="deriveModal" aria-hidden="true">
   <div class="info-modal-card derive-modal-card" role="dialog" aria-modal="true" aria-labelledby="deriveModalTitle">
@@ -809,9 +815,8 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     <div class="derive-summary"><small>Área sugerida</small><strong id="deriveArea">—</strong><p id="deriveFinding">—</p></div>
     <div class="field compact" id="deriveNameField"><label for="deriveName">Nombre de la persona <span class="required">*</span></label><div class="control"><input class="no-icon" id="deriveName" placeholder="Ej. Ana Pérez" /></div><span class="error">Ingresa el nombre.</span></div>
     <div class="field compact" id="deriveEmailField"><label for="deriveEmail">Correo principal <span class="required">*</span></label><div class="control"><input class="no-icon" id="deriveEmail" type="email" placeholder="nombre@sise.edu.pe" /></div><span class="error">Ingresa un correo válido.</span></div>
-    <div class="field compact" id="deriveEmail2Field"><label for="deriveEmail2">Correo adicional 1 <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><div class="control"><input class="no-icon" id="deriveEmail2" type="email" placeholder="copia1@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o deja el campo vacío.</span></div>
-    <div class="field compact" id="deriveEmail3Field"><label for="deriveEmail3">Correo adicional 2 <span style="font-weight:500;color:var(--muted)">(opcional)</span></label><div class="control"><input class="no-icon" id="deriveEmail3" type="email" placeholder="copia2@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o deja el campo vacío.</span></div>
-    <div class="structured-note" style="margin:-2px 0 12px">El correo principal es obligatorio. Puedes agregar hasta dos correos adicionales para que reciban la misma derivación.</div>
+    <div class="field compact" id="deriveEmail2Field"><label for="deriveEmail2">Correo adicional 1 (opcional)</label><div class="control"><input class="no-icon" id="deriveEmail2" type="email" placeholder="copia1@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o déjalo vacío.</span></div>
+    <div class="field compact" id="deriveEmail3Field"><label for="deriveEmail3">Correo adicional 2 (opcional)</label><div class="control"><input class="no-icon" id="deriveEmail3" type="email" placeholder="copia2@sise.edu.pe" /></div><span class="error">Ingresa un correo válido o déjalo vacío.</span></div>
     <div class="field compact"><label for="deriveMessage">Mensaje adicional</label><div class="control"><textarea id="deriveMessage" style="min-height:88px" placeholder="Añade una indicación breve si es necesario."></textarea></div></div>
     <div class="derive-note">La derivación se enviará directamente desde Ruta SISE. No se abrirá Outlook, Gmail ni otra aplicación. Si estás sin conexión, quedará en cola para enviarse automáticamente cuando vuelva internet.</div>
     <div class="exit-modal-actions" style="margin-top:16px"><button type="button" class="btn btn-outline" id="cancelDeriveBtn">Cancelar</button><button type="button" class="btn btn-primary" id="confirmDeriveBtn">Enviar derivación</button></div>
@@ -835,9 +840,10 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
       </div>
       <div class="grid-2">
         <div class="field compact context-field" id="contextCycleField"><label for="captureCycle">Ciclo</label><div class="control"><input class="no-icon" id="captureCycle" placeholder="Ej. III" /></div></div>
-        <div class="field compact context-field" id="contextTurnField"><label for="captureTurn">Turno</label><div class="control"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><select id="captureTurn"><option value="">Selecciona un turno</option><option>Mañana</option><option>Tarde</option><option>Noche</option></select><span class="arrow">⌄</span></div></div>
+        <div class="field compact context-field" id="contextTurnField"><label for="captureTurn">Turno</label><div class="control"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><select id="captureTurn"><option value="">Selecciona un turno</option><option>Madrugador</option><option>Mañana</option><option>Tarde</option><option>Noche</option></select><span class="arrow">⌄</span></div></div>
       </div>
       <div class="field compact context-field" id="contextSectionField"><label for="captureSection">Aula / sección / sesión</label><div class="control"><input class="no-icon" id="captureSection" placeholder="Ej. Aula 402 · Sección DS31" /></div></div>
+      <div class="field compact context-field hidden" id="contextStudentCountField"><label for="captureStudentCount">Cantidad de estudiantes</label><div class="control"><input class="no-icon" id="captureStudentCount" type="number" min="0" step="1" placeholder="Ej. 28" /></div></div>
       <div class="field compact context-field hidden" id="contextSpaceField"><label for="captureSpace">Espacio / ambiente</label><div class="control"><input class="no-icon" id="captureSpace" placeholder="Ej. Laboratorio 302, módulo de atención, patio" /></div></div>
       <div class="field compact context-field hidden" id="contextReferenceField"><label for="captureReference">Contexto / referencia</label><div class="control"><input class="no-icon" id="captureReference" placeholder="Describe brevemente dónde o en qué situación ocurrió" /></div></div>
       <div class="structured-note" id="contextStructuredNote">Los datos visibles se exportan en columnas independientes para facilitar filtros y análisis.</div>
@@ -848,12 +854,21 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
         <div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
         <div><div class="sheet-kicker" id="personKicker">Persona escuchada</div><h4 id="personHeading">Datos del estudiante</h4><p id="personHelp">Identifica a la persona para que el registro pueda filtrarse y trazarse posteriormente.</p></div>
       </div>
-      <div class="field compact hidden" id="fieldStudentStatus"><label>Condición del estudiante <span class="required">*</span></label><div class="chips" id="studentStatusChips"><button type="button" class="chip" data-student-status="Estudiante">Estudiante</button><button type="button" class="chip" data-student-status="Egresado">Egresado</button></div><span class="error">Selecciona si es estudiante o egresado.</span></div>
+      <div class="field compact hidden" id="fieldVoiceMode"><label>Tipo de registro de voz <span class="required">*</span></label><div class="chips" id="voiceModeChips"><button type="button" class="chip" data-voice-mode="Individual">Individual</button><button type="button" class="chip" data-voice-mode="Grupal">Grupal</button></div><span class="error">Selecciona registro individual o grupal.</span></div>
+      <div class="field compact hidden" id="fieldStudentStatus"><label>Condición <span class="required">*</span></label><div class="chips" id="studentStatusChips"><button type="button" class="chip" data-student-status="Estudiante">Estudiante</button><button type="button" class="chip" data-student-status="Egresado">Egresado</button></div><span class="error">Selecciona estudiante o egresado.</span></div>
+      <div class="field compact hidden" id="fieldGroupCount"><label for="groupInterviewCount">Cantidad de personas entrevistadas <span class="required">*</span></label><div class="control"><input class="no-icon" id="groupInterviewCount" type="number" min="2" step="1" placeholder="Ej. 6" /></div><span class="error">Ingresa la cantidad de personas entrevistadas.</span></div>
       <div class="field compact" id="fieldPersonName"><label for="personName" id="personNameLabel">Nombre y apellidos <span class="required">*</span></label><div class="control"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="personName" placeholder="Escribe el nombre completo" /></div><span class="error">Registra el nombre de la persona escuchada.</span></div>
       <div class="field compact" id="fieldPersonCode"><label for="personCode" id="personCodeLabel">Código / DNI <span class="required">*</span></label><div class="control"><input class="no-icon" id="personCode" placeholder="Ingresa código institucional o DNI" /></div><span class="error">Registra el código institucional o DNI.</span></div>
     </section>
 
+    <section class="sheet-section" id="dimensionSection">
+      <div class="sheet-kicker">Paso 1 del hallazgo</div>
+      <h4>Dimensión <span class="required">*</span></h4>
+      <div class="field compact"><div class="control"><select id="captureDimension" class="no-icon"><option value="">Selecciona una dimensión</option></select><span class="arrow">⌄</span></div><span class="error">Selecciona una dimensión.</span></div>
+    </section>
+
     <section class="sheet-section" id="criteriaSection">
+      <div class="sheet-kicker">Paso 2 del hallazgo</div>
       <h4 class="title-with-info"><span id="criteriaTitle">¿Qué observaste?</span> <button type="button" class="info-btn" aria-label="Información sobre qué observar" data-info-title="¿Qué observaste?" data-info-text="Selecciona primero el aspecto con mayor efecto en la experiencia académica o de servicio. Puedes marcar más de uno si están relacionados. Ejemplo: si una clase se interrumpe porque los equipos no funcionan, puedes marcar Recursos / plataforma o Laboratorios / equipos según el tipo de registro. Si ninguna opción describe lo observado, selecciona Otro y escríbelo.">i</button></h4>
       <p class="priority-hint">Las opciones están ordenadas de mayor a menor impacto orientativo para facilitar el registro.</p>
       <div class="chips" id="criteriaChips"></div>
@@ -867,13 +882,13 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     <section class="sheet-section">
       <div class="sheet-kicker">Clasificación</div>
       <h4 class="title-with-info">Datos para análisis <button type="button" class="info-btn" aria-label="Información sobre clasificación" data-info-title="Clasificación del registro" data-info-text="La dimensión organiza el tipo de situación y la naturaleza indica el nivel de atención o el efecto del hallazgo. Usa Alerta cuando requiere atención prioritaria; Brecha cuando existe una diferencia relevante frente a lo esperado; Oportunidad cuando se identifica una mejora posible; y Fortaleza cuando es una práctica positiva que conviene mantener o replicar.">i</button></h4>
-      <div class="field compact"><label for="captureDimension">Dimensión</label><div class="control"><select id="captureDimension" class="no-icon"><option value="">Selecciona una dimensión</option></select><span class="arrow">⌄</span></div></div>
       <div class="field"><div class="classification-label">Naturaleza <span class="required">*</span> <button type="button" class="info-btn" aria-label="Información sobre naturaleza" data-info-title="Naturaleza del hallazgo" data-info-text="Las opciones están ordenadas por nivel de atención o efecto. Alerta: requiere atención prioritaria; por ejemplo, una condición que impide desarrollar la clase. Brecha: existe una diferencia relevante frente a lo esperado; por ejemplo, un equipo necesario que no está disponible. Oportunidad: existe una mejora posible; por ejemplo, simplificar un proceso. Fortaleza: práctica positiva que conviene mantener o replicar; por ejemplo, una estrategia docente que genera alta participación.">i</button></div><p class="priority-hint">Orden de atención: Alerta → Brecha → Oportunidad → Fortaleza.</p><div class="chips" id="natureChips"><button type="button" class="chip">Alerta</button><button type="button" class="chip">Brecha</button><button type="button" class="chip">Oportunidad</button><button type="button" class="chip">Fortaleza</button></div></div>
     </section>
 
-    <section class="sheet-section">
-      <h4>Nota y audio</h4>
-      <div class="field" id="fieldCaptureNote"><div class="control"><textarea id="captureNote" placeholder="Escribe una observación breve o usa el micrófono para dictarla…"></textarea></div><span class="error">Escribe una nota o usa el micrófono para generar la transcripción.</span></div>
+    <section class="sheet-section" id="detailFindingSection">
+      <div class="sheet-kicker">Paso 3 del hallazgo</div>
+      <h4>Detalle del hallazgo</h4>
+      <div class="field" id="fieldCaptureNote"><div class="control"><textarea id="captureNote" placeholder="Describe el hallazgo con el mayor detalle necesario o usa el micrófono para dictarlo…"></textarea></div><span class="error">Escribe una nota o usa el micrófono para generar la transcripción.</span></div>
       <div class="mic-box" style="margin-top:12px">
         <label class="consent"><input type="checkbox" id="consentAudio"><span>Confirmo que, si estoy grabando a otra persona, cuento con su autorización para registrar y transcribir esta conversación.</span></label>
         <button class="mic-button" id="micButton" type="button" aria-label="Iniciar grabación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8"/></svg></button>
@@ -899,8 +914,15 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
         <div class="structured-note" style="margin-top:12px">En celular, “Tomar foto” abre la cámara cuando el navegador lo permite. En PC puedes adjuntar archivos. El registro conserva el nombre y tipo de cada evidencia para su trazabilidad.</div>
       </div>
     </section>
+
+    <section class="sheet-section" id="itemsSection">
+      <div class="sheet-kicker">Hallazgos del mismo registro</div>
+      <h4>Ítems registrados</h4>
+      <div id="itemsAccordion"><div class="structured-note">Aún no agregaste ítems adicionales. Completa el hallazgo actual y usa “+ Ítem” si necesitas registrar otro tema dentro de la misma persona o contexto.</div></div>
+      <button type="button" class="btn btn-outline" id="addItemBtn" style="margin-top:12px;width:100%">+ Ítem</button>
+    </section>
   </div>
-  <footer class="sheet-foot"><button class="btn btn-ghost" id="cancelCapture">Cancelar</button><button class="btn btn-primary" id="saveCapture">Cerrar y registrar</button></footer>
+  <footer class="sheet-foot"><button class="btn btn-ghost" id="cancelCapture">Cancelar</button><button class="btn btn-outline" id="saveDraftBtn">Guardar</button><button class="btn btn-primary" id="saveCapture">Cerrar y registrar</button></footer>
 </aside>
 
 <div class="toast" id="toast">Registro guardado.</div>
@@ -937,116 +959,54 @@ window.RUTA_SISE_SUPABASE_CONFIG={url:'https://wsymamqhcshmdtbpwemq.supabase.co'
     speechFatal:false,
     audioObjectUrl:'',
     editingRecordId:null,
-    attachmentMemory:{},
-    supabaseClient:null,
-    supabaseUser:null,
-    evidenceSyncRunning:false,
-    historyEvidenceRecordId:''
+    pendingItems:[], editingItemIndex:-1, currentRecordStartedAt:null, pendingDraftTimer:null,
+    attachmentMemory:{}, evidenceSupabase:null
   };
 
   const $ = s => document.querySelector(s);
   const $$ = s => [...document.querySelectorAll(s)];
 
 
-  function supaCfg(){return window.RUTA_SISE_SUPABASE_CONFIG||{}}
-  function supaClient(){
-    const c=supaCfg();
+  function evidenceClient(){
+    const c=window.RUTA_SISE_SUPABASE_CONFIG||{};
     if(!window.supabase?.createClient||!c.url||!c.publishableKey)return null;
-    if(!state.supabaseClient)state.supabaseClient=window.supabase.createClient(c.url,c.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-    return state.supabaseClient;
+    if(!state.evidenceSupabase)state.evidenceSupabase=window.supabase.createClient(c.url,c.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+    return state.evidenceSupabase;
   }
-  async function ensureSupaUser(){
-    const sb=supaClient();if(!sb)return null;
-    if(state.supabaseUser)return state.supabaseUser;
-    try{
-      const {data}=await sb.auth.getSession();
-      if(data?.session?.user){state.supabaseUser=data.session.user;return state.supabaseUser}
-      const res=await sb.auth.signInAnonymously();
-      if(res.error)throw res.error;
-      state.supabaseUser=res.data?.user||res.data?.session?.user||null;return state.supabaseUser;
-    }catch(e){console.warn('Supabase auth:',e);return null}
+  async function ensureEvidenceSession(){
+    const sb=evidenceClient();if(!sb)return null;
+    try{const {data}=await sb.auth.getSession();if(data?.session)return data.session;}catch(e){}
+    try{const {data,error}=await sb.auth.signInAnonymously();if(error)throw error;return data?.session||null}catch(e){console.warn('Ruta SISE evidencia: sesión anónima no disponible',e);return null}
   }
-  function safeEvidenceName(v){return String(v||'archivo').replace(/[^A-Za-z0-9._-]+/g,'_').slice(0,120)}
-  async function uploadEvidenceRow(row){
-    const sb=supaClient(),user=await ensureSupaUser();if(!sb||!user||!row?.blob||!row?.recordId)return false;
-    const cfg=supaCfg(), objectPath=`${user.id}/${row.recordId}/${row.id}_${safeEvidenceName(row.name)}`;
-    const up=await sb.storage.from(cfg.bucket||'ruta-sise-evidencias').upload(objectPath,row.blob,{contentType:row.type||'application/octet-stream',upsert:true});
-    if(up.error)throw up.error;
-    const meta={evidence_id:row.id,record_id:row.recordId,owner_uid:user.id,bucket:cfg.bucket||'ruta-sise-evidencias',object_path:objectPath,name:row.name||'archivo',type:row.type||'',size:Number(row.size||row.blob.size||0),uploaded_at:new Date().toISOString()};
-    const db=await sb.from('ruta_sise_evidences').upsert(meta,{onConflict:'evidence_id'});
-    if(db.error)throw db.error;
-    return true;
-  }
-  async function allStoredEvidenceRows(){
-    try{const db=await openAttachmentDB();const rows=await new Promise((resolve,reject)=>{const tx=db.transaction('attachments','readonly'),req=tx.objectStore('attachments').getAll();req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});db.close();return rows}catch(e){return []}
-  }
-  async function syncStoredEvidenceToSupabase(){
-    if(state.evidenceSyncRunning||!navigator.onLine)return;
-    state.evidenceSyncRunning=true;
-    try{
-      const rows=await allStoredEvidenceRows();if(!rows.length)return;
-      let ok=0;for(const row of rows){try{if(await uploadEvidenceRow(row))ok++}catch(e){console.warn('Evidencia pendiente',row?.id,e)}}
-      if(ok)console.info(`Ruta SISE: ${ok} evidencia(s) sincronizada(s) con Supabase.`);
-    }finally{state.evidenceSyncRunning=false}
-  }
-  async function syncRecordEvidenceToSupabase(recordId){
-    let rows=[];let uploaded=0;let lastError='';
-    try{
-      const db=await openAttachmentDB();
-      rows=await new Promise((resolve,reject)=>{const tx=db.transaction('attachments','readonly'),store=tx.objectStore('attachments'),idx=store.index('recordId'),req=idx.getAll(IDBKeyRange.only(recordId));req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error)});
-      db.close();
-      for(const row of rows){try{if(await uploadEvidenceRow(row))uploaded++}catch(e){lastError=String(e?.message||e);console.warn('No se pudo subir evidencia',e)}}
-    }catch(e){lastError=String(e?.message||e)}
-    return {total:rows.length,uploaded,ok:rows.length>0&&uploaded===rows.length,error:lastError};
-  }
-
-  async function storeAdditionalEvidenceRows(recordId,files){
-    const rows=[];if(!recordId||!files?.length)return rows;
-    const stamp=Date.now();
-    try{
-      const db=await openAttachmentDB();
-      await new Promise((resolve,reject)=>{
-        const tx=db.transaction('attachments','readwrite'),store=tx.objectStore('attachments');
-        files.forEach((file,i)=>{
-          const id=`${recordId}__REC_${stamp}_${String(i+1).padStart(2,'0')}`;
-          const row={id,recordId,name:file.name||`evidencia_${i+1}`,type:file.type||'application/octet-stream',size:file.size||0,blob:file};
-          rows.push(row);store.put(row);
-        });
-        tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
-      });
-      db.close();
-    }catch(e){
-      files.forEach((file,i)=>rows.push({id:`${recordId}__REC_MEM_${stamp}_${i+1}`,recordId,name:file.name||`evidencia_${i+1}`,type:file.type||'application/octet-stream',size:file.size||0,blob:file}));
+  function safeEvidenceFileName(v){return String(v||'archivo').replace(/[^A-Za-z0-9._-]+/g,'_').slice(0,140)}
+  async function uploadEvidenceFiles(record,files){
+    const sb=evidenceClient();if(!sb)throw new Error('Supabase no disponible');
+    const session=await ensureEvidenceSession();
+    const cfg=window.RUTA_SISE_SUPABASE_CONFIG||{},bucket=cfg.bucket||'ruta-sise-evidencias';
+    let uploaded=0;
+    for(let i=0;i<files.length;i++){
+      const a=files[i],blob=attBlob(a)||a;if(!blob)continue;
+      const name=attName(a)||blob.name||`evidencia_${i+1}`,type=attType(a)||blob.type||'application/octet-stream',size=attSize(a)||blob.size||0;
+      const evidenceId=`${record.recordId}__${String(i+1).padStart(2,'0')}`;
+      const objectPath=`${session?.user?.id||'anon'}/${record.recordId}/${evidenceId}_${safeEvidenceFileName(name)}`;
+      const up=await sb.storage.from(bucket).upload(objectPath,blob,{contentType:type,upsert:true});if(up.error)throw up.error;
+      const meta={evidence_id:evidenceId,record_id:record.recordId,owner_uid:session?.user?.id||null,bucket,object_path:objectPath,name,type,size,uploaded_at:new Date().toISOString()};
+      const db=await sb.from('ruta_sise_evidences').upsert(meta,{onConflict:'evidence_id'});if(db.error)throw db.error;
+      uploaded++;
     }
-    return rows;
+    if(uploaded){record.evidenceSyncStatus='Sincronizada en nube';record.evidenceCount=Math.max(Number(record.evidenceCount||0),uploaded);persistUserHistory(record);try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){};renderRecent();}
+    return uploaded;
   }
-
-  async function uploadHistoryEvidence(record,files){
-    if(!record?.recordId||!files?.length)return {uploaded:0,total:0};
-    if(!navigator.onLine)throw new Error('Sin conexión a internet.');
-    const user=await ensureSupaUser();
-    if(!user)throw new Error('Supabase no autorizó la carga. Verifica que Anonymous Sign-Ins esté habilitado.');
-    const rows=await storeAdditionalEvidenceRows(record.recordId,[...files]);
-    let uploaded=0;const refs=[];
-    for(const row of rows){
-      await uploadEvidenceRow(row);uploaded++;
-      refs.push({id:row.id,name:row.name,type:row.type,size:row.size});
-    }
-    const existingRefs=Array.isArray(record.attachmentRefs)?record.attachmentRefs:[];
-    const byId=new Map([...existingRefs,...refs].map(x=>[x.id,x]));
-    record.attachmentRefs=[...byId.values()];
-    const oldNames=String(record.evidenceNames||'').split(' | ').map(x=>x.trim()).filter(Boolean);
-    record.evidenceNames=[...new Set([...oldNames,...refs.map(x=>x.name)])].join(' | ');
-    const previous=Number(record.evidenceCount||0);
-    record.evidenceCount=Math.max(previous,record.attachmentRefs.length);
-    record.evidenceSyncStatus='Sincronizada en nube';
-    record.updatedTime=new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(new Date());
-    const localRecord=state.records.find(r=>r.recordId===record.recordId);
-    if(localRecord&&localRecord!==record)Object.assign(localRecord,record);
-    persistUserHistory(record);
-    try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
-    await flushRemoteQueue();
-    return {uploaded,total:rows.length};
+  function pickEvidenceFiles(){return new Promise(resolve=>{const input=document.createElement('input');input.type='file';input.multiple=true;input.accept='image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,audio/*,video/*';input.style.display='none';document.body.appendChild(input);input.addEventListener('change',()=>{const files=[...(input.files||[])];input.remove();resolve(files)});input.click()})}
+  async function retryEvidenceUpload(record){
+    if(!record)return;
+    if(!navigator.onLine){showToast('Sin internet. La evidencia se mantiene pendiente.');return}
+    let files=await loadAttachments(record),selectedAgain=false;
+    if(!files.length){files=(await pickEvidenceFiles()).map(f=>({file:f,name:f.name,type:f.type,size:f.size}));selectedAgain=files.length>0;}
+    if(!files.length){showToast('No seleccionaste evidencias para volver a subir.');return}
+    if(selectedAgain){const refs=await persistAttachments(record.recordId,files);record.attachmentRefs=refs;record.evidenceCount=refs.length;record.evidenceNames=refs.map(x=>x.name).join(' | ');record.evidenceTypes=refs.map(x=>x.type||'archivo').join(' | ');record.evidenceSyncStatus='Pendiente de reintento';persistUserHistory(record);}
+    showToast('Subiendo evidencia…');
+    try{const n=await uploadEvidenceFiles(record,files);showToast(`${n} evidencia${n===1?'':'s'} subida${n===1?'':'s'} correctamente.`)}catch(e){console.warn(e);record.evidenceSyncStatus='Pendiente de reintento';persistUserHistory(record);renderRecent();alert('No se pudo subir la evidencia.\n\n'+String(e?.message||e));}
   }
 
 
@@ -1186,16 +1146,26 @@ async function flushPendingDerivations(){
     const local=readUserHistory().filter(x=>String(x.visitorEmail||'').toLowerCase()===email);
     const remote=remoteHistoryCache.filter(x=>String(x.visitorEmail||'').toLowerCase()===email);
     const map=new Map();[...remote,...local].forEach(x=>{const key=x.historyId||x.recordId||`${x.systemEvent||'EVT'}-${x.visitDate||''}-${x.recordTime||''}`;map.set(key,{...(map.get(key)||{}),...x})});
-    return [...map.values()].sort((a,b)=>String(b.visitDate||'').localeCompare(String(a.visitDate||''))||String(b.recordTime||'').localeCompare(String(a.recordTime||'')));
+    return [...map.values()].filter(x=>x.systemEvent==='REGISTRO_CAMPO'||x.recordId?.startsWith('RA-')).sort((a,b)=>String(b.recordDate||'').localeCompare(String(a.recordDate||''))||String(b.recordEndTime||'').localeCompare(String(a.recordEndTime||'')));
   }
   function historyDetailHtml(x){
     const cells=[
-      ['ID de registro',x.recordId],['Tipo de registro',x.recordType],['Fecha / hora',[x.visitDate,x.recordTime].filter(Boolean).join(' ')],['Sede',x.campus],
+      ['ID de registro',x.recordId],['Fecha de registro',x.recordDate],['Tipo de registro',x.recordType],['Inicio registro',x.recordStartTime||x.recordStartAt],['Cierre registro',x.recordEndTime||x.recordEndAt],['Tiempo total (seg)',x.recordDurationSeconds],['Sede',x.campus],
       ['Modalidad',x.modality],['Área visitante',x.visitorArea],['Programa / carrera',x.program],['Curso / asignatura',x.course],['Ciclo',x.cycle],['Turno',x.turn],
       ['Aula / sección',x.section],['Contexto / referencia',x.reference],['Persona',x.personName],['Código / DNI',x.personCode],['Dimensión',x.dimension],['Qué observaste',x.criteria],
       ['Naturaleza',x.nature],['Recurrencia',x.recurrence],['Acción posterior',x.followup],['Área derivación',x.derivationArea],['Estado derivación',x.derivationStatus],['Evidencias',x.evidenceCount||0]
     ].filter(c=>String(c[1]??'').trim()!=='');
     return `<div class="history-detail-grid">${cells.map(c=>`<div class="history-detail-cell"><small>${escapeHtml(c[0])}</small><strong>${escapeHtml(c[1])}</strong></div>`).join('')}${x.note?`<div class="history-detail-cell history-detail-note"><small>Nota</small><strong>${escapeHtml(x.note)}</strong></div>`:''}${x.transcript?`<div class="history-detail-cell history-detail-note"><small>Transcripción</small><strong>${escapeHtml(x.transcript)}</strong></div>`:''}</div>`;
+  }
+  function historyRecordItems(x){
+    let items=Array.isArray(x?.items)?x.items:[];
+    if(!items.length&&x?.itemsJson){try{const parsed=JSON.parse(x.itemsJson);if(Array.isArray(parsed))items=parsed}catch(e){}}
+    if(!items.length)items=[{itemNumber:x?.itemNumber||1,dimension:x?.dimension||'',queObservo:x?.queObservo||x?.criteria||'',detail:x?.detailFinding||x?.note||'',nature:x?.nature||'',evidenceCount:Number(x?.evidenceCount||0)}];
+    return items.map((it,i)=>({...it,itemNumber:Number(it.itemNumber||i+1)}));
+  }
+  function historyItemsHtml(x){
+    const items=historyRecordItems(x);
+    return `<div style="display:grid;gap:9px;margin-top:12px">${items.map((it,i)=>`<div style="border:1px solid #e2e8f0;border-radius:11px;padding:11px;background:#fafafa"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><strong style="font-size:13px">Ítem ${it.itemNumber} · ${escapeHtml(it.dimension||'Sin dimensión')}</strong><div style="font-size:12px;color:#64748b;margin-top:4px">${escapeHtml(it.queObservo||'Sin observación')}</div>${it.detail?`<div style="font-size:12px;color:#475569;margin-top:5px">${escapeHtml(it.detail)}</div>`:''}</div><span class="pending-badge">Ítem ${it.itemNumber}</span></div><div class="history-record-actions"><button type="button" class="history-action-btn" data-history-reupload="${escapeHtml(x.recordId||'')}" data-history-item="${it.itemNumber}">Volver a subir evidencia</button>${Number(it.evidenceCount||0)>0?`<span style="font-size:12px;color:#64748b;align-self:center">📎 ${Number(it.evidenceCount||0)} evidencia(s)</span>`:''}</div></div>`).join('')}</div>`;
   }
   function renderHistory(){
     const email=currentUserEmail(),box=$('#historyList');if(!box)return;
@@ -1213,7 +1183,7 @@ async function flushPendingDerivations(){
     box.innerHTML=visitKeys.map(key=>{
       const group=grouped[key];const head=group.find(x=>x.systemEvent==='INICIO_VISITA')||group[0];const records=group.filter(x=>x.systemEvent==='REGISTRO_CAMPO');
       const date=head?.visitDate||'',campus=head?.campus||'Sede no indicada',modality=head?.modality||'';
-      const recordHtml=records.length?records.map(x=>{const title=x.recordType||'Registro',summary=x.note||x.criteria||x.dimension||'Registro guardado';return `<article class="history-record" data-history-record="${escapeHtml(x.historyId||x.recordId)}"><div class="history-record-top"><div><div class="history-record-title">${escapeHtml(title)}${x.personName?`: ${escapeHtml(x.personName)}`:''}</div><div class="history-record-summary">${escapeHtml(summary)}</div></div><span class="history-record-time">${escapeHtml((x.recordTime||'').slice(0,5))}</span></div><div class="history-record-actions"><button type="button" class="history-action-btn" data-history-view="${escapeHtml(x.historyId||x.recordId)}">Ver detalle</button><button type="button" class="history-action-btn" data-history-upload="${escapeHtml(x.historyId||x.recordId)}">↑ Subir evidencia</button><button type="button" class="history-action-btn" data-history-download="${escapeHtml(x.historyId||x.recordId)}">⇩ Descargar</button></div><div class="history-detail hidden" id="history-detail-${escapeHtml(x.historyId||x.recordId)}">${historyDetailHtml(x)}</div></article>`}).join(''):'<div class="history-record"><div class="history-record-summary">Esta visita aún no tiene registros de campo guardados.</div></div>';
+      const recordHtml=records.length?records.map(x=>{const title=x.recordType||'Registro',summary=x.note||x.criteria||x.dimension||'Registro guardado';return `<article class="history-record" data-history-record="${escapeHtml(x.historyId||x.recordId)}"><div class="history-record-top"><div><div class="history-record-title">${escapeHtml(title)}${x.personName?`: ${escapeHtml(x.personName)}`:''}</div><div class="history-record-summary">${escapeHtml(summary)}</div></div><span class="history-record-time">${escapeHtml(x.recordEndTime||x.recordTime||'')}</span></div><div class="history-record-actions"><button type="button" class="history-action-btn" data-history-view="${escapeHtml(x.historyId||x.recordId)}">Ver detalle</button><button type="button" class="history-action-btn" data-history-download="${escapeHtml(x.historyId||x.recordId)}">⇩ Descargar</button></div>${historyItemsHtml(x)}<div class="history-detail hidden" id="history-detail-${escapeHtml(x.historyId||x.recordId)}">${historyDetailHtml(x)}</div></article>`}).join(''):'<div class="history-record"><div class="history-record-summary">Esta visita aún no tiene registros de campo guardados.</div></div>';
       return `<section class="history-visit"><div class="history-visit-head"><div><strong>${escapeHtml(date||'Visita')} · ${escapeHtml(campus)}</strong><span>${escapeHtml([modality,head?.visitorArea].filter(Boolean).join(' · '))}</span></div><div class="history-visit-count">${records.length} registro${records.length===1?'':'s'}</div></div><div>${recordHtml}</div></section>`;
     }).join('');
   }
@@ -1227,9 +1197,20 @@ async function flushPendingDerivations(){
   function closeHistory(){$('#historyModal').classList.remove('open');$('#historyModal').setAttribute('aria-hidden','true')}
   function findHistoryRecord(id){return historyItemsForCurrentUser().find(x=>(x.historyId||x.recordId)===id)}
   function downloadBlob(data,type,name){const blob=data instanceof Blob?data:new Blob([data],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500)}
+  function exportItemRows(records){
+    const out=[];
+    (records||[]).forEach(r=>{
+      let items=Array.isArray(r.items)?r.items:[];
+      if(!items.length&&r.itemsJson){try{const x=JSON.parse(r.itemsJson);if(Array.isArray(x))items=x}catch(e){}}
+      if(!items.length)items=[{itemNumber:r.itemNumber||1,dimension:r.dimension,queObservo:r.queObservo||r.criteria,detail:r.detailFinding||r.note,nature:r.nature,transcript:r.transcript,evidenceCount:r.evidenceCount,evidenceNames:r.evidenceNames,evidenceTypes:r.evidenceTypes}];
+      items.forEach((it,i)=>out.push({...r,itemNumber:Number(it.itemNumber||i+1),dimension:it.dimension||'',queObservo:it.queObservo||'',detailFinding:it.detail||it.detailFinding||'',nature:it.nature||'',transcript:it.transcript||'',evidenceCount:Number(it.evidenceCount||0),evidenceNames:it.evidenceNames||'',evidenceTypes:it.evidenceTypes||''}));
+    });
+    return out;
+  }
+  function exportRecordColumns(){return [['ID_VISITA','visitId'],['ID_REGISTRO','recordId'],['ITEM','itemNumber'],['FECHA_REGISTRO','recordDate'],['HORA_INICIO_REGISTRO','recordStartTime'],['HORA_CIERRE_REGISTRO','recordEndTime'],['TIEMPO_TOTAL_SEGUNDOS','recordDurationSeconds'],['TIEMPO_TOTAL_MINUTOS','recordDurationMinutes'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['DIMENSION','dimension'],['QUE_OBSERVO','queObservo'],['DETALLE_HALLAZGO','detailFinding'],['NATURALEZA','nature'],['TIPO_PERSONA','personType'],['MODO_VOZ','voiceMode'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['CANTIDAD_ENTREVISTADOS','groupInterviewCount'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['CANTIDAD_ESTUDIANTES','studentCount'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['CORREO_DERIVACION_PRINCIPAL','derivationEmailPrimary'],['CORREO_DERIVACION_ADICIONAL_1','derivationEmailCc1'],['CORREO_DERIVACION_ADICIONAL_2','derivationEmailCc2'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['TIPOS_EVIDENCIAS','evidenceTypes'],['ESTADO_EVIDENCIAS','evidenceSyncStatus'],['ESTADO_REGISTRO','recordStatus']];}
   function historyCsv(records){
-    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['FECHA_VISITA','visitDate'],['HORA_REGISTRO','recordTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['TIPO_REGISTRO','recordType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['ESTADO_DERIVACION','derivationStatus'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames']];
-    return '\uFEFF'+[cols.map(c=>csvCell(c[0])).join(';'),...records.map(r=>cols.map(c=>csvCell(r[c[1]]??'')).join(';'))].join('\r\n');
+    const cols=exportRecordColumns(),rows=exportItemRows(records);
+    return '\uFEFF'+[cols.map(c=>csvCell(c[0])).join(';'),...rows.map(r=>cols.map(c=>csvCell(r[c[1]]??'')).join(';'))].join('\r\n');
   }
   async function downloadHistoryRecord(record){
     if(!record)return;
@@ -1246,8 +1227,7 @@ async function flushPendingDerivations(){
 
   function openDerivation(recordId){
     const record=state.records.find(r=>r.recordId===recordId);if(!record)return;state.derivationRecordId=recordId;const rec=recommendationFor(record);
-    const previousEmails=[record.derivationEmailPrimary,record.derivationEmailCc1,record.derivationEmailCc2].filter(Boolean);if(!previousEmails.length&&record.derivationEmail)previousEmails.push(...String(record.derivationEmail).split(/\s*[|,;]\s*/).filter(Boolean));
-    $('#deriveArea').textContent=rec.area;$('#deriveFinding').textContent=record.note||record.criteria||record.dimension||record.recordType;$('#deriveName').value=record.derivationName||'';$('#deriveEmail').value=previousEmails[0]||'';$('#deriveEmail2').value=previousEmails[1]||'';$('#deriveEmail3').value=previousEmails[2]||'';$('#deriveMessage').value='';$('#deriveNameField').classList.remove('invalid');$('#deriveEmailField').classList.remove('invalid');$('#deriveEmail2Field').classList.remove('invalid');$('#deriveEmail3Field').classList.remove('invalid');$('#deriveModal').classList.add('open');$('#deriveModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#deriveName')?.focus(),100)
+    $('#deriveArea').textContent=rec.area;$('#deriveFinding').textContent=record.note||record.criteria||record.dimension||record.recordType;$('#deriveName').value=record.derivationName||'';$('#deriveEmail').value=record.derivationEmail||'';$('#deriveMessage').value='';$('#deriveNameField').classList.remove('invalid');$('#deriveEmailField').classList.remove('invalid');$('#deriveModal').classList.add('open');$('#deriveModal').setAttribute('aria-hidden','false');setTimeout(()=>$('#deriveName')?.focus(),100)
   }
   function closeDerivation(){$('#deriveModal').classList.remove('open');$('#deriveModal').setAttribute('aria-hidden','true');state.derivationRecordId=''}
   function buildDerivationMail(record,recipientName,area,message){
@@ -1275,31 +1255,36 @@ async function flushPendingDerivations(){
     'Innovación y Transformación Educativa':[['Experiencia activa','Participación, retos, casos y aprendizaje aplicado.'],['Uso pedagógico','Tecnología e IA con una intención clara de aprendizaje.'],['Prácticas replicables','Experiencias que vale la pena compartir o escalar.']],
     'Gestión Curricular':[['Coherencia curricular','Sílabo, resultado de aprendizaje y actividad.'],['Evaluación','Correspondencia entre lo trabajado y lo evaluado.'],['Secuencia y materiales','Progresión, pertinencia y actualización.']],
     'Jefatura Sedes y Experiencia':[['Experiencia del estudiante','Fricciones, atención, información y continuidad.'],['Operación de sede','Inicio de clases, soporte, servicios y atención.'],['Condiciones del espacio','Aulas, laboratorios, equipos y conectividad.']],
-    'Jefatura de Escuela':[['Experiencia académica','Cruzar clase, voz del estudiante y voz del docente.'],['Patrones del programa','Detectar temas que se repiten entre cursos o sedes.'],['Acción de escuela','Identificar cuándo corresponde una intervención académica.']]
+    'Jefatura de Escuela':[['Experiencia académica','Cruzar clase, voz del estudiante y voz del docente.'],['Patrones del programa','Detectar temas que se repiten entre cursos o sedes.'],['Acción de escuela','Identificar cuándo corresponde una intervención académica.']],
+    'Secretaría':[['Atención y orientación','Claridad de la información, trato y resolución de consultas.'],['Trámites y tiempos','Matrícula, documentos, solicitudes y tiempos de respuesta.'],['Comunicación y seguimiento','Derivaciones, información entregada y seguimiento de casos.']],
+    'Jefatura Investigación, innovación alumni':[['Investigación e innovación','Iniciativas, proyectos, participación y oportunidades de innovación.'],['Comunidad Alumni','Vinculación con egresados, actividades, seguimiento y participación.'],['Acompañamiento y desarrollo','Necesidades de orientación, capacitación y fortalecimiento de competencias.']]
   };
 
-  const chipsByAction = {
-    Aula:['Evaluación / retroalimentación','Actividad / metodología','Participación','Propósito y organización','Recursos / plataforma','Condiciones del ambiente','Otro'],
-    Estudiante:['Continuidad / permanencia','Experiencia de clase','Docente','Servicios y atención','Información y comunicación','Bienestar','Empleabilidad','Otro'],
-    Docente:['Plataforma / conectividad','Recursos y equipamiento','Práctica pedagógica','Planificación y materiales','Soporte de sede','Acompañamiento','Carga / horarios','Otro'],
-    Sede:['Conectividad','Laboratorios / equipos','Infraestructura','Servicios y atención','Gestión de sede','Información / señalización','Espacios comunes','Otro'],
-    Hallazgo:['Académico','Tecnológico','Infraestructura','Servicio / atención','Curricular','Información','Bienestar','Empleabilidad','Gestión de sede','Otro']
+  const ALL_DIMENSIONS=[
+    'D1 · Aula y desempeño docente','D2 · Currículo, sílabo y evaluación','D3 · Plataformas y conectividad','D4 · Infraestructura, equipamiento y limpieza','D5 · Servicios y atención','D6 · Matrícula, pagos y cobranzas','D7 · Información y comunicación','D8 · Bienestar y vida estudiantil','D9 · Prácticas, EFSRT y empleabilidad','D10 · Gestión de la sede','D11 · Seguridad, convivencia y accesibilidad','D12 · Gestión académica y trayectoria estudiantil','D13 · Acompañamiento, capacitación y desarrollo'
+  ];
+  const OBSERVATIONS_BY_DIMENSION={
+    'D1 · Aula y desempeño docente':['Inicio y propósito de la sesión','Claridad en la explicación','Dominio del tema','Metodología y desarrollo de clase','Participación e interacción','Gestión del tiempo','Evaluación y retroalimentación','Recursos didácticos','Uso pedagógico de recursos digitales','Clima de aula','Manejo del grupo','Asistencia y puntualidad docente','Otro'],
+    'D2 · Currículo, sílabo y evaluación':['Cumplimiento del sílabo','Coherencia entre contenidos y sesión','Resultados de aprendizaje','Actividades de aprendizaje','Evaluaciones','Rúbricas y criterios de evaluación','Retroalimentación académica','Materiales académicos','Recursos digitales del curso','Actualización de contenidos','Carga académica','Otro'],
+    'D3 · Plataformas y conectividad':['Acceso a Canvas / LMS','Acceso a sistemas institucionales','Usuario o contraseña','Conectividad a internet','Velocidad o estabilidad de red','Acceso a recursos digitales','Enlaces o contenidos no disponibles','Clases virtuales','Software o aplicaciones','Funcionamiento de plataformas','Soporte tecnológico','Otro'],
+    'D4 · Infraestructura, equipamiento y limpieza':['Estado de aulas','Mobiliario','Computadoras','Proyectores / pantallas','Equipos tecnológicos','Laboratorios','Equipamiento especializado','Iluminación','Ventilación','Limpieza de aulas','Limpieza de espacios comunes','Servicios higiénicos','Mantenimiento','Disponibilidad de ambientes','Otro'],
+    'D5 · Servicios y atención':['Atención en sede','Atención administrativa','Tiempo de respuesta','Orientación al estudiante','Calidad de atención','Trato recibido','Resolución de consultas','Resolución de reclamos','Atención telefónica o virtual','Disponibilidad del personal','Derivación entre áreas','Seguimiento de solicitudes','Otro'],
+    'D6 · Matrícula, pagos y cobranzas':['Proceso de matrícula','Reserva de matrícula','Registro de cursos','Cambio de sección','Horarios de matrícula','Pagos','Deudas','Cuotas','Descuentos','Becas o beneficios','Comprobantes de pago','Bloqueos administrativos','Información de cobranzas','Regularización de pagos','Otro'],
+    'D7 · Información y comunicación':['Información académica','Información administrativa','Claridad de la información','Oportunidad de la comunicación','Canales de comunicación','Comunicaciones institucionales','Información de horarios','Cambios o reprogramaciones','Señalización','Información contradictoria','Falta de información','Seguimiento de comunicaciones','Otro'],
+    'D8 · Bienestar y vida estudiantil':['Bienestar emocional','Orientación al estudiante','Acompañamiento personal','Integración estudiantil','Actividades extracurriculares','Vida estudiantil','Convivencia','Inclusión','Atención de situaciones personales','Participación estudiantil','Actividades culturales o deportivas','Beneficios estudiantiles','Otro'],
+    'D9 · Prácticas, EFSRT y empleabilidad':['Información sobre prácticas','Acceso a prácticas','EFSRT','Seguimiento de prácticas','Convenios','Bolsa laboral','Oportunidades de empleo','Talleres de empleabilidad','Preparación de CV','Preparación para entrevistas','Inserción laboral','Relación con empresas','Seguimiento de egresados','Otro'],
+    'D10 · Gestión de la sede':['Organización de la sede','Coordinación entre áreas','Presencia de responsables','Atención de incidencias','Resolución de problemas','Supervisión de servicios','Gestión de horarios','Gestión de ambientes','Disponibilidad de personal','Cumplimiento de procesos','Seguimiento de solicitudes','Coordinación académica-operativa','Otro'],
+    'D11 · Seguridad, convivencia y accesibilidad':['Seguridad dentro de la sede','Control de ingreso','Situaciones de riesgo','Emergencias','Señalización de seguridad','Rutas de evacuación','Convivencia','Conflictos','Conductas inadecuadas','Accesibilidad física','Accesibilidad para personas con discapacidad','Condiciones de tránsito interno','Prevención de riesgos','Otro'],
+    'D12 · Gestión académica y trayectoria estudiantil':['Programación académica','Horarios','Cambios de sección','Asistencia estudiantil','Inasistencias reiteradas','Riesgo de abandono','Retiro de estudiantes','Continuidad académica','Bajo rendimiento','Seguimiento académico','Reincorporación','Carga académica','Coordinación con escuela','Casos especiales de estudiantes','Otro'],
+    'D13 · Acompañamiento, capacitación y desarrollo':['Inducción','Capacitación docente','Capacitación administrativa','Acompañamiento pedagógico','Acompañamiento académico','Asesoría técnica','Uso de plataformas','Uso de herramientas digitales','Actualización metodológica','Necesidad de capacitación','Seguimiento de compromisos','Espacios de retroalimentación','Desarrollo de competencias','Otro']
   };
-
-  const dimensionsByAction = {
-    Aula:['D1 · Aula y desempeño docente','D2 · Currículo, sílabo y evaluación','D3 · Plataformas y conectividad','D4 · Infraestructura y equipamiento'],
-    Estudiante:['D1 · Aula y desempeño docente','D2 · Currículo, sílabo y evaluación','D3 · Plataformas y conectividad','D5 · Servicios y atención','D6 · Matrícula, pagos y cobranzas','D7 · Información y comunicación','D8 · Bienestar y vida estudiantil','D9 · Prácticas, EFSRT y empleabilidad'],
-    Docente:['D1 · Aula y desempeño docente','D2 · Currículo, sílabo y evaluación','D3 · Plataformas y conectividad','D4 · Infraestructura y equipamiento','D7 · Información y comunicación','D9 · Prácticas, EFSRT y empleabilidad','D10 · Gestión de la sede'],
-    Sede:['D3 · Plataformas y conectividad','D4 · Infraestructura y equipamiento','D5 · Servicios y atención','D6 · Matrícula, pagos y cobranzas','D7 · Información y comunicación','D8 · Bienestar y vida estudiantil','D10 · Gestión de la sede'],
-    Hallazgo:['D1 · Aula y desempeño docente','D2 · Currículo, sílabo y evaluación','D3 · Plataformas y conectividad','D4 · Infraestructura y equipamiento','D5 · Servicios y atención','D6 · Matrícula, pagos y cobranzas','D7 · Información y comunicación','D8 · Bienestar y vida estudiantil','D9 · Prácticas, EFSRT y empleabilidad','D10 · Gestión de la sede']
-  };
-
+  const dimensionsByAction={Aula:ALL_DIMENSIONS,Estudiante:ALL_DIMENSIONS,Docente:ALL_DIMENSIONS,Sede:ALL_DIMENSIONS,Hallazgo:ALL_DIMENSIONS};
   const actionConfig = {
-    Aula:{label:'Observar clase',context:['program','course','cycle','turn','section'],help:'Identifica la sesión observada para comparar posteriormente por programa, curso, ciclo y turno.'},
-    Estudiante:{label:'Voz del estudiante',context:['program','cycle','turn','section'],help:'Ubica al estudiante y el contexto de la conversación. El curso no es obligatorio porque la experiencia puede ser más amplia que una clase.'},
-    Docente:{label:'Voz del docente',context:['program','course','turn','section'],help:'Registra el contexto de dictado y las condiciones que el docente describe u observas.'},
-    Sede:{label:'Observar sede',context:['turn','space','reference'],help:'En esta opción no se solicita carrera, curso ni ciclo. Registra el ambiente, servicio o punto de la sede que estás observando.'},
-    Hallazgo:{label:'Otros hallazgos',context:['reference'],help:'Úsalo solo para situaciones relevantes que no correspondan a Observar clase, Observar sede, Voz del estudiante o Voz del docente. Describe directamente el contexto o la situación encontrada.'}
+    Aula:{label:'Observar clase',context:['program','course','cycle','turn','section','studentCount'],help:'Identifica la sesión observada. Incluye la cantidad de estudiantes presentes.'},
+    Estudiante:{label:'Voz del estudiante',context:['program','cycle','turn'],help:'Registra el contexto general. Para voz del estudiante no se solicita aula, sección ni sesión.'},
+    Docente:{label:'Voz del docente',context:['program','course','turn'],help:'Registra el contexto del docente. No se solicita aula, sección ni sesión.'},
+    Sede:{label:'Observar sede',context:['turn','space','reference'],help:'Registra el ambiente, servicio o punto de la sede que estás observando.'},
+    Hallazgo:{label:'Otros hallazgos',context:['reference'],help:'Describe directamente el contexto o la situación encontrada.'}
   };
 
   function setNow(){
@@ -1510,7 +1495,7 @@ async function flushPendingDerivations(){
       dateISO:state.visitStart.toISOString().slice(0,10), timeISO:state.visitStart.toTimeString().slice(0,8), location:state.mode==='Presencial'?state.location:null, visitId:state.visitId
     };
     saveLoginIdentity();
-    persistUserHistory({historyId:state.visitId,recordId:state.visitId,systemEvent:'INICIO_VISITA',recordType:'Inicio de visita',visitId:state.visitId,visitDate:state.visitMeta.dateISO,recordTime:state.visitMeta.timeISO,visitorName:state.visitMeta.visitorName,visitorEmail:state.visitMeta.visitorEmail,visitorArea:state.visitMeta.area,visitorRole:state.visitMeta.role,campus:state.visitMeta.campus,modality:state.visitMeta.modality,note:'Inicio de visita registrado.'});
+    const visitStartEvent={historyId:state.visitId,recordId:state.visitId,systemEvent:'INICIO_VISITA',recordType:'Inicio de visita',visitId:state.visitId,visitDate:state.visitMeta.dateISO,recordTime:state.visitMeta.timeISO,visitorName:state.visitMeta.visitorName,visitorEmail:state.visitMeta.visitorEmail,visitorArea:state.visitMeta.area,visitorRole:state.visitMeta.role,campus:state.visitMeta.campus,modality:state.visitMeta.modality,note:'Inicio de visita registrado.'};state.records.push(visitStartEvent);persistUserHistory(visitStartEvent);
     $('#screenRegister').classList.add('hidden'); $('#screenDashboard').classList.remove('hidden');
     $('#sideStep1').classList.remove('active'); $('#sideStep2').classList.add('active'); $('#progressBar').style.width='66%';
     $('#helloName').textContent=state.visitMeta.visitorName.split(' ')[0];
@@ -1525,7 +1510,8 @@ async function flushPendingDerivations(){
   }
   function renderFocus(area){
     $('#focusBadge').textContent=area||'Área'; $('#focusTitle').textContent='Focos del área';
-    $('#focusList').innerHTML=(focusByArea[area]||[]).map(x=>`<div class="focus-item"><div class="focus-check">•</div><div><strong>${escapeHtml(x[0])}</strong><span>${escapeHtml(x[1])}</span></div></div>`).join('');
+    const focos=focusByArea[area]||[['Experiencia observada','Registra situaciones relevantes que afecten la experiencia académica o de servicio.'],['Necesidades de mejora','Identifica brechas, alertas u oportunidades que requieran atención.'],['Seguimiento','Registra situaciones que deban revisarse o derivarse a otra área.']];
+    $('#focusList').innerHTML=focos.map(x=>`<div class="focus-item"><div class="focus-check">•</div><div><strong>${escapeHtml(x[0])}</strong><span>${escapeHtml(x[1])}</span></div></div>`).join('');
   }
 
   $$('.quick-action').forEach(btn=>btn.addEventListener('click',()=>openCapture(btn.dataset.action)));
@@ -1535,45 +1521,144 @@ async function flushPendingDerivations(){
   }
   function applyContextFields(action){
     const cfg=actionConfig[action]||actionConfig.Hallazgo;
-    const map={program:'#contextProgramField',course:'#contextCourseField',cycle:'#contextCycleField',turn:'#contextTurnField',section:'#contextSectionField',space:'#contextSpaceField',reference:'#contextReferenceField'};
+    const map={program:'#contextProgramField',course:'#contextCourseField',cycle:'#contextCycleField',turn:'#contextTurnField',section:'#contextSectionField',space:'#contextSpaceField',reference:'#contextReferenceField',studentCount:'#contextStudentCountField'};
     Object.values(map).forEach(s=>$(s)?.classList.add('hidden'));
     cfg.context.forEach(k=>$(map[k])?.classList.remove('hidden'));
     $('#contextHelp').textContent=cfg.help;
   }
   function resetCaptureForm(){
-    ['#captureProgram','#captureCourse','#captureCycle','#captureSection','#captureSpace','#captureReference','#personName','#personCode','#captureNote','#criteriaOther'].forEach(s=>{if($(s))$(s).value=''});
+    ['#captureProgram','#captureCourse','#captureCycle','#captureSection','#captureStudentCount','#captureSpace','#captureReference','#personName','#personCode','#groupInterviewCount','#captureNote','#criteriaOther'].forEach(s=>{if($(s))$(s).value=''});
     $('#criteriaOtherWrap')?.classList.add('hidden');$('#criteriaOtherWrap')?.classList.remove('invalid');
     $('#captureTurn').value=''; $('#captureDimension').value='';
     if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){} state.audioObjectUrl='';}
     $('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.'; $('#audioPlayback').style.display='none'; $('#audioPlayback').removeAttribute('src');
     state.speechBaseText='';state.speechFinalText='';state.speechInterimText='';state.speechFatal=false;
-    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null; $('#saveCapture').textContent='Cerrar y registrar';
+    $('#consentAudio').checked=false; $$('#captureSheet .chip.active').forEach(c=>c.classList.remove('active')); state.currentAttachments=[]; renderAttachments(); $('#fieldPersonName').classList.remove('invalid'); $('#fieldPersonCode')?.classList.remove('invalid'); $$('#captureSheet .field.invalid, #captureSheet .sheet-section.invalid').forEach(x=>x.classList.remove('invalid')); state.editingRecordId=null;state.pendingItems=[];state.editingItemIndex=-1;state.currentRecordStartedAt=null;$('#saveCapture').textContent='Cerrar y registrar';$('#addItemBtn').textContent='+ Ítem';renderItemsAccordion();
   }
   function openCapture(action,keepEdit=false){
-    if(!keepEdit)resetCaptureForm(); state.currentAction=action;
+    if(!keepEdit)resetCaptureForm(); state.currentAction=action;if(!keepEdit)state.currentRecordStartedAt=new Date().toISOString();
     const cfg=actionConfig[action]||actionConfig.Hallazgo;
     $('#sheetEyebrow').textContent=keepEdit?'Editar registro':'Nuevo registro'; $('#sheetTitle').textContent=cfg.label;
     $('#sheetSubtitle').textContent='Registra solo lo necesario. Puedes escribir, dictar una nota y adjuntar evidencias.';
-    $('#criteriaTitle').textContent=action==='Estudiante'||action==='Docente'?'¿Qué tema apareció en la conversación?':'¿Qué observaste?';
-    $('#criteriaChips').innerHTML=(chipsByAction[action]||[]).map(x=>`<button type="button" class="chip">${escapeHtml(x)}</button>`).join(''); bindChipGroup('#criteriaChips',syncCriteriaOther); syncCriteriaOther();
+    $('#criteriaTitle').textContent='¿Qué observaste?';
+    $('#criteriaChips').innerHTML='<span class="structured-note">Selecciona primero una dimensión.</span>';
     applyContextFields(action); renderDimensionOptions(action);
     const person=action==='Estudiante'||action==='Docente'; $('#personSection').classList.toggle('hidden',!person);
     if(person){
-      const isStudent=action==='Estudiante'; $('#personKicker').textContent='Persona escuchada'; $('#personHeading').textContent=isStudent?'Datos del estudiante':'Datos del docente';
-      $('#personHelp').textContent=isStudent?'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del estudiante.':'El nombre queda como campo independiente para filtrar y dar trazabilidad a la voz del docente.';
-      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
-      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante':'docente'} <span class="required">*</span>`;
-    }
+      const isStudent=action==='Estudiante'; $('#personKicker').textContent='Persona escuchada'; $('#personHeading').textContent=isStudent?'Datos de la voz del estudiante':'Datos del docente';
+      $('#personHelp').textContent=isStudent?'Elige si el registro corresponde a una entrevista individual o grupal.':'Identifica al docente una sola vez; los ítems del mismo registro se ramifican debajo.';
+      $('#fieldVoiceMode')?.classList.toggle('hidden',!isStudent);
+      if(isStudent&&!$('#voiceModeChips .chip.active'))$('#voiceModeChips .chip[data-voice-mode="Individual"]')?.classList.add('active');
+      $('#personNameLabel').innerHTML=`Nombre y apellidos del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
+      $('#personCodeLabel').innerHTML=`Código / DNI del ${isStudent?'estudiante / egresado':'docente'} <span class="required">*</span>`;
+      updateStudentVoiceMode();
+    }else{$('#fieldVoiceMode')?.classList.add('hidden');$('#fieldStudentStatus')?.classList.add('hidden');$('#fieldGroupCount')?.classList.add('hidden');}
     markVisibleCaptureFieldsRequired();
     document.body.classList.add('capture-open');
     $('#overlay').classList.add('open'); $('#captureSheet').classList.add('open'); $('#captureSheet').setAttribute('aria-hidden','false');
-    const sheetBody=$('#captureSheet .sheet-body'); if(sheetBody) sheetBody.scrollTop=0;
+    const sheetBody=$('#captureSheet .sheet-body'); if(sheetBody) sheetBody.scrollTop=0;if(!keepEdit)setTimeout(()=>restorePendingCapture(action),0);
   }
   function closeCapture(){if(state.listening)stopMic();document.body.classList.remove('capture-open');$('#overlay').classList.remove('open');$('#captureSheet').classList.remove('open');$('#captureSheet').setAttribute('aria-hidden','true')}
   $('#closeSheet').addEventListener('click',closeCapture); $('#cancelCapture').addEventListener('click',closeCapture); $('#overlay').addEventListener('click',closeCapture);
   function bindChipGroup(sel,onChange){$$(sel+' .chip').forEach(ch=>ch.addEventListener('click',()=>{ch.classList.toggle('active');if(onChange)onChange(ch)}))}
   function syncCriteriaOther(){const active=$$('#criteriaChips .chip.active').some(c=>c.textContent.trim()==='Otro');$('#criteriaOtherWrap')?.classList.toggle('hidden',!active);if(!active){$('#criteriaOther').value='';$('#criteriaOtherWrap')?.classList.remove('invalid')}}
   bindChipGroup('#natureChips');
+  function renderObservationOptions(){
+    const d=$('#captureDimension').value,opts=OBSERVATIONS_BY_DIMENSION[d]||[];
+    $('#criteriaChips').innerHTML=opts.length?opts.map(x=>`<button type="button" class="chip">${escapeHtml(x)}</button>`).join(''):'<span class="structured-note">Selecciona primero una dimensión.</span>';
+    bindChipGroup('#criteriaChips',syncCriteriaOther);syncCriteriaOther();persistPendingCaptureSoon();
+  }
+  $('#captureDimension')?.addEventListener('change',renderObservationOptions);
+  function selectSingleChip(groupSelector,btn){$$(groupSelector+' .chip').forEach(x=>x.classList.toggle('active',x===btn))}
+  $$('#voiceModeChips .chip').forEach(ch=>ch.addEventListener('click',()=>{selectSingleChip('#voiceModeChips',ch);updateStudentVoiceMode();persistPendingCaptureSoon()}));
+  $$('#studentStatusChips .chip').forEach(ch=>ch.addEventListener('click',()=>{selectSingleChip('#studentStatusChips',ch);persistPendingCaptureSoon()}));
+  function updateStudentVoiceMode(){
+    const isStudent=state.currentAction==='Estudiante',mode=$('#voiceModeChips .chip.active')?.dataset.voiceMode||'';
+    $('#fieldVoiceMode')?.classList.toggle('hidden',!isStudent);
+    const group=isStudent&&mode==='Grupal';
+    $('#fieldGroupCount')?.classList.toggle('hidden',!group);
+    $('#fieldPersonName')?.classList.toggle('hidden',group);
+    $('#fieldPersonCode')?.classList.toggle('hidden',group);
+    $('#fieldStudentStatus')?.classList.toggle('hidden',!isStudent||group);
+  }
+
+  const PENDING_CAPTURE_KEY='rutaSisePendingCaptureV2';
+  function captureItemValues(){
+    const criteria=$$('#criteriaChips .chip.active').map(c=>c.textContent.trim()),other=$('#criteriaOther')?.value.trim()||'';
+    return {itemId:`ITEM-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,dimension:$('#captureDimension').value,queObservo:criteria.map(x=>x==='Otro'&&other?`Otro: ${other}`:x).join(' | '),criteriaOther:other,nature:$('#natureChips .chip.active')?.textContent.trim()||'',detail:$('#captureNote').value.trim(),transcript:($('#transcriptBox').textContent||'').includes('La transcripción aparecerá')?'':$('#transcriptBox').textContent.trim(),attachments:state.currentAttachments.map(a=>({...a})),evidenceNames:state.currentAttachments.map(attName).join(' | '),evidenceCount:state.currentAttachments.length};
+  }
+  function itemValid(show=true){
+    const dim=!!$('#captureDimension').value,obs=$$('#criteriaChips .chip.active').length>0,nature=!!$('#natureChips .chip.active'),detail=!!($('#captureNote').value.trim()||(!($('#transcriptBox').textContent||'').includes('La transcripción aparecerá')&&$('#transcriptBox').textContent.trim()));
+    if(show){$('#dimensionSection').classList.toggle('invalid',!dim);$('#criteriaSection').classList.toggle('invalid',!obs);if(!dim||!obs||!nature||!detail)showToast('Completa Dimensión, ¿Qué observaste?, naturaleza y detalle del hallazgo.');}
+    return dim&&obs&&nature&&detail;
+  }
+  function renderItemsAccordion(){
+    const box=$('#itemsAccordion');if(!box)return;
+    if(!state.pendingItems?.length){box.innerHTML='<div class="structured-note">Aún no agregaste ítems adicionales. Completa el hallazgo actual y usa “+ Ítem” si necesitas registrar otro tema dentro del mismo registro.</div>';return}
+    box.innerHTML=state.pendingItems.map((it,i)=>`<article class="item-card${state.editingItemIndex===i?' item-editing':''}"><button type="button" class="item-card-head" data-item-toggle="${i}" aria-expanded="false"><span>Ítem ${i+1} · ${escapeHtml(it.dimension||'Sin dimensión')}</span><span>⌄</span></button><div class="item-card-body hidden" id="item-body-${i}"><strong>¿Qué observaste?</strong><br>${escapeHtml(it.queObservo||'—')}<br><br><strong>Detalle</strong><br>${escapeHtml(it.detail||it.transcript||'—')}<br><br><strong>Clasificación</strong><br>${escapeHtml(it.nature||'—')}${it.evidenceCount?`<br><br>📎 ${it.evidenceCount} evidencia(s)`:''}<div class="recent-actions" style="margin-top:12px"><button type="button" class="recent-btn" data-item-edit="${i}">Editar ítem</button></div></div></article>`).join('');
+  }
+  function resetCurrentItemFields(){
+    $('#captureDimension').value='';renderObservationOptions();$('#criteriaOther').value='';$('#criteriaOtherWrap').classList.add('hidden');$$('#natureChips .chip').forEach(c=>c.classList.remove('active'));$('#captureNote').value='';$('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.';state.currentAttachments=[];renderAttachments();if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){}state.audioObjectUrl=''}$('#audioPlayback').style.display='none';$('#audioPlayback').removeAttribute('src');state.editingItemIndex=-1;$('#addItemBtn').textContent='+ Ítem';
+  }
+  async function loadItemIntoEditor(i){
+    const it=state.pendingItems?.[i];if(!it)return;
+    state.editingItemIndex=i;
+    $('#captureDimension').value=it.dimension||'';renderObservationOptions();
+    const parts=String(it.queObservo||'').split(' | ').filter(Boolean);
+    $$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',c.textContent.trim()==='Otro'?parts.some(x=>x.startsWith('Otro')):parts.includes(c.textContent.trim())));
+    $('#criteriaOther').value=it.criteriaOther||((parts.find(x=>x.startsWith('Otro: '))||'').replace(/^Otro:\s*/,''));syncCriteriaOther();
+    $$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent.trim()===(it.nature||'')));
+    $('#captureNote').value=it.detail||'';
+    $('#transcriptBox').textContent=it.transcript||'La transcripción aparecerá aquí y podrás revisarla antes de guardar.';
+    state.currentAttachments=Array.isArray(it.attachments)?it.attachments.map(a=>({...a})):[];renderAttachments();
+    $('#addItemBtn').textContent='Guardar cambios del ítem';
+    renderItemsAccordion();
+    $('#captureDimension').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+  $('#itemsAccordion')?.addEventListener('click',e=>{
+    const edit=e.target.closest('[data-item-edit]');if(edit){e.preventDefault();loadItemIntoEditor(Number(edit.dataset.itemEdit));return}
+    const b=e.target.closest('[data-item-toggle]');if(!b)return;const body=document.getElementById(`item-body-${b.dataset.itemToggle}`);body?.classList.toggle('hidden');b.setAttribute('aria-expanded',String(body&&!body.classList.contains('hidden')))
+  });
+  $('#addItemBtn')?.addEventListener('click',()=>{
+    if(!itemValid(true))return;
+    const item=captureItemValues();
+    if(state.editingItemIndex>=0){state.pendingItems[state.editingItemIndex]=item;showToast('Cambios del ítem guardados.');}
+    else{state.pendingItems.push(item);showToast('Ítem agregado. Registra el siguiente hallazgo dentro del mismo registro.');}
+    renderItemsAccordion();resetCurrentItemFields();state.currentRecordStartedAt=state.currentRecordStartedAt||new Date().toISOString();persistPendingCaptureSoon();
+  });
+  function pendingDraftSnapshot(){return {action:state.currentAction,startedAt:state.currentRecordStartedAt,editingRecordId:state.editingRecordId,program:$('#captureProgram').value,course:$('#captureCourse').value,cycle:$('#captureCycle').value,turn:$('#captureTurn').value,section:$('#captureSection').value,studentCount:$('#captureStudentCount')?.value||'',space:$('#captureSpace').value,reference:$('#captureReference').value,personName:$('#personName').value,personCode:$('#personCode').value,voiceMode:$('#voiceModeChips .chip.active')?.dataset.voiceMode||'',studentStatus:$('#studentStatusChips .chip.active')?.dataset.studentStatus||'',groupInterviewCount:$('#groupInterviewCount')?.value||'',dimension:$('#captureDimension').value,criteria:$$('#criteriaChips .chip.active').map(c=>c.textContent.trim()),criteriaOther:$('#criteriaOther').value,nature:$('#natureChips .chip.active')?.textContent.trim()||'',note:$('#captureNote').value,transcript:$('#transcriptBox').textContent,pendingItems:state.pendingItems.map(it=>({...it,attachments:[]})),editingItemIndex:state.editingItemIndex,savedAt:new Date().toISOString(),status:'Pendiente local'};}
+  async function persistPendingCapture(){
+    if(!state.currentAction||$('#captureSheet').getAttribute('aria-hidden')==='true')return null;
+    const snap=pendingDraftSnapshot();let existing=null;try{existing=JSON.parse(localStorage.getItem(PENDING_CAPTURE_KEY)||'null')}catch(e){}
+    const pendingId=state.editingRecordId||existing?.pendingId||`PENDING-${state.visitId||'VIS'}-${Date.now()}`;snap.pendingId=pendingId;
+    try{localStorage.setItem(PENDING_CAPTURE_KEY,JSON.stringify(snap))}catch(e){}
+    try{snap.attachmentRefs=await persistAttachments(pendingId,state.currentAttachments);localStorage.setItem(PENDING_CAPTURE_KEY,JSON.stringify(snap))}catch(e){}
+    return snap;
+  }
+  function persistPendingCaptureImmediate(){
+    if(!state.currentAction||$('#captureSheet').getAttribute('aria-hidden')==='true')return;
+    try{const snap=pendingDraftSnapshot(),old=JSON.parse(localStorage.getItem(PENDING_CAPTURE_KEY)||'null');snap.pendingId=state.editingRecordId||old?.pendingId||`PENDING-${state.visitId||'VIS'}-${Date.now()}`;snap.attachmentRefs=old?.attachmentRefs||[];localStorage.setItem(PENDING_CAPTURE_KEY,JSON.stringify(snap))}catch(e){}
+  }
+  function persistPendingCaptureSoon(){clearTimeout(state.pendingDraftTimer);persistPendingCaptureImmediate();state.pendingDraftTimer=setTimeout(()=>persistPendingCapture(),300)}
+  async function restorePendingCapture(action){
+    try{
+      const d=JSON.parse(localStorage.getItem(PENDING_CAPTURE_KEY)||'null');if(!d||d.action!==action)return;
+      state.editingRecordId=d.editingRecordId||null;state.currentRecordStartedAt=d.startedAt||new Date().toISOString();
+      $('#captureProgram').value=d.program||'';$('#captureCourse').value=d.course||'';$('#captureCycle').value=d.cycle||'';$('#captureTurn').value=d.turn||'';$('#captureSection').value=d.section||'';if($('#captureStudentCount'))$('#captureStudentCount').value=d.studentCount||'';$('#captureSpace').value=d.space||'';$('#captureReference').value=d.reference||'';$('#personName').value=d.personName||'';$('#personCode').value=d.personCode||'';if($('#groupInterviewCount'))$('#groupInterviewCount').value=d.groupInterviewCount||'';
+      $$('#voiceModeChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.voiceMode===d.voiceMode));$$('#studentStatusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.studentStatus===d.studentStatus));updateStudentVoiceMode();
+      $('#captureDimension').value=d.dimension||'';renderObservationOptions();$$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',(d.criteria||[]).includes(c.textContent.trim())));$('#criteriaOther').value=d.criteriaOther||'';syncCriteriaOther();$$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent.trim()===d.nature));$('#captureNote').value=d.note||'';if(d.transcript)$('#transcriptBox').textContent=d.transcript;
+      state.pendingItems=Array.isArray(d.pendingItems)?d.pendingItems:[];state.editingItemIndex=Number.isInteger(d.editingItemIndex)?d.editingItemIndex:-1;renderItemsAccordion();
+      if(d.attachmentRefs?.length)state.currentAttachments=await loadAttachments({recordId:d.pendingId,attachmentRefs:d.attachmentRefs});renderAttachments();
+      if(state.editingRecordId){$('#sheetEyebrow').textContent='Editar registro pendiente';$('#saveCapture').textContent='Cerrar y actualizar';}
+      showToast('Se retomó un registro pendiente guardado en este dispositivo.');
+    }catch(e){}
+  }
+  ['input','change'].forEach(ev=>$('#captureSheet')?.addEventListener(ev,persistPendingCaptureSoon));
+  $('#saveDraftBtn')?.addEventListener('click',async()=>{await persistPendingCapture();renderRecent();closeCapture();showToast('Registro guardado como pendiente. Puedes retomarlo desde Últimos registros.');});
+  window.addEventListener('offline',()=>{persistPendingCaptureImmediate();persistPendingCapture();renderRecent();showToast('Sin internet: el registro queda pendiente en este dispositivo hasta “Cerrar y registrar”.')});
+  window.addEventListener('pagehide',persistPendingCaptureImmediate);
+  window.addEventListener('beforeunload',persistPendingCaptureImmediate);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)persistPendingCaptureImmediate()});
 
   // Evidence files / mobile camera
   $('#takePhotoBtn').addEventListener('click',()=>$('#cameraInput').click());
@@ -1582,7 +1667,7 @@ async function flushPendingDerivations(){
   $('#fileInput').addEventListener('change',e=>addFiles([...e.target.files]));
   function addFiles(files){
     files.forEach(file=>{if(state.currentAttachments.length<10)state.currentAttachments.push({file,name:file.name,type:file.type,size:file.size,url:file.type.startsWith('image/')?URL.createObjectURL(file):''})});
-    renderAttachments(); $('#cameraInput').value=''; $('#fileInput').value='';
+    renderAttachments();persistPendingCaptureSoon(); $('#cameraInput').value=''; $('#fileInput').value='';
   }
   function renderAttachments(){
     const box=$('#previewGrid');
@@ -1650,81 +1735,53 @@ async function flushPendingDerivations(){
 
   function validateCaptureForm(){
     let ok=true,first=null;
-    const requiredInputs=$$('#captureSheet .context-field:not(.hidden) input, #captureSheet .context-field:not(.hidden) select');
-    requiredInputs.forEach(el=>{
-      const yes=String(el.value||'').trim().length>0;setFieldInvalid(el,!yes);if(!yes){ok=false;if(!first)first=el}
-    });
-    const personVisible=!$('#personSection').classList.contains('hidden');
-    if(personVisible){
-      [['#personName','Registra el nombre de la persona escuchada.'],['#personCode','Registra el código institucional o DNI.']].forEach(([sel,msg])=>{const el=$(sel),yes=String(el.value||'').trim().length>0;setFieldInvalid(el,!yes,msg);if(!yes){ok=false;if(!first)first=el}});
-    }
-    const dim=$('#captureDimension'),dimOk=!!dim.value;setFieldInvalid(dim,!dimOk,'Selecciona una dimensión.');if(!dimOk){ok=false;if(!first)first=dim}
-    const criteriaOk=$$('#criteriaChips .chip.active').length>0;
-    $('#criteriaSection').classList.toggle('invalid',!criteriaOk);
-    let criteriaErr=$('#criteriaSection > .error');
-    if(!criteriaErr){criteriaErr=document.createElement('span');criteriaErr.className='error';criteriaErr.textContent='Selecciona al menos una opción.';$('#criteriaSection').appendChild(criteriaErr)}
-    if(!criteriaOk){ok=false;if(!first)first=$('#criteriaChips .chip')}
-    const otherActive=$$('#criteriaChips .chip.active').some(c=>c.textContent.trim()==='Otro');
-    const otherOk=!otherActive||$('#criteriaOther').value.trim().length>0;$('#criteriaOtherWrap').classList.toggle('invalid',!otherOk);if(!otherOk){ok=false;if(!first)first=$('#criteriaOther')}
-    const natureOk=$$('#natureChips .chip.active').length>0;
-    const analysisSection=$('#natureChips').closest('.sheet-section');
-    let analysisErr=analysisSection.querySelector('.analysis-required-error');
-    if(!analysisErr){analysisErr=document.createElement('span');analysisErr.className='error analysis-required-error';analysisSection.appendChild(analysisErr)}
-    analysisErr.textContent=!natureOk?'Selecciona una naturaleza.':'';
-    analysisSection.classList.toggle('invalid',!natureOk);
-    if(!natureOk){ok=false;if(!first)first=$('#natureChips .chip')}
-    const note=$('#captureNote'),noteOk=note.value.trim().length>0;setFieldInvalid(note,!noteOk,'Escribe una nota o usa el micrófono para generar la transcripción.');if(!noteOk){ok=false;if(!first)first=note}
-    if(!ok){showToast('Completa todos los campos obligatorios antes de registrar.');first?.focus?.();first?.scrollIntoView({behavior:'smooth',block:'center'});}
+    const visibleFields=$$('#captureSheet .context-field:not(.hidden)');
+    visibleFields.forEach(f=>{const el=f.querySelector('input,select');if(!el)return;const yes=String(el.value||'').trim()!=='';f.classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||el}});
+    const action=state.currentAction,isStudent=action==='Estudiante',isDocente=action==='Docente';
+    if(isStudent){
+      const mode=$('#voiceModeChips .chip.active')?.dataset.voiceMode||'';$('#fieldVoiceMode').classList.toggle('invalid',!mode);if(!mode){ok=false;first=first||$('#fieldVoiceMode')}
+      if(mode==='Grupal'){const n=Number($('#groupInterviewCount').value||0);$('#fieldGroupCount').classList.toggle('invalid',n<2);if(n<2){ok=false;first=first||$('#groupInterviewCount')}}
+      else{const st=$('#studentStatusChips .chip.active')?.dataset.studentStatus||'';$('#fieldStudentStatus').classList.toggle('invalid',!st);if(!st){ok=false;first=first||$('#fieldStudentStatus')};[['#personName','#fieldPersonName'],['#personCode','#fieldPersonCode']].forEach(([a,b])=>{const yes=!!$(a).value.trim();$(b).classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||$(a)}})}
+    }else if(isDocente){[['#personName','#fieldPersonName'],['#personCode','#fieldPersonCode']].forEach(([a,b])=>{const yes=!!$(a).value.trim();$(b).classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||$(a)}})}
+    if(!itemValid(false)){ok=false;first=first||$('#captureDimension')}
+    if(!ok){showToast('Completa todos los campos obligatorios antes de cerrar y registrar.');first?.scrollIntoView?.({behavior:'smooth',block:'center'})}
     return ok;
   }
-
   $('#saveCapture').addEventListener('click',async()=>{
-    const action=state.currentAction, personRequired=action==='Estudiante'||action==='Docente';
     if(!validateCaptureForm())return;
-    const nature=$$('#natureChips .chip.active').map(x=>x.textContent), criteria=$$('#criteriaChips .chip.active').map(x=>x.textContent), criteriaOther=$('#criteriaOther').value.trim();
-    const normalizedCriteria=criteria.map(x=>x==='Otro'&&criteriaOther?`Otro: ${criteriaOther}`:x);
-    const now=new Date(), note=$('#captureNote').value.trim(), transcript=$('#transcriptBox').textContent.includes('aparecerá aquí')?'':$('#transcriptBox').textContent.trim();
-    const editing=state.editingRecordId?state.records.find(r=>r.recordId===state.editingRecordId):null;
+    if(state.listening)stopMic();
+    const now=new Date(),action=state.currentAction,editing=state.editingRecordId?state.records.find(r=>r.recordId===state.editingRecordId):null;
     const recordId=editing?.recordId||`RA-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}-${String(state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').length+1).padStart(3,'0')}`;
-    const attachmentRefs=await persistAttachments(recordId,state.currentAttachments);
+    const finalItem=captureItemValues(),items=[...(state.pendingItems||[]),finalItem];
+    const allAttachments=items.flatMap(it=>it.attachments||[]);const attachmentRefs=await persistAttachments(recordId,allAttachments);
+    const endAt=now.toISOString(),startAt=editing?.recordStartAt||state.currentRecordStartedAt||endAt,durationSeconds=Math.max(0,Math.round((new Date(endAt)-new Date(startAt))/1000)),recordStartTime=new Date(startAt).toTimeString().slice(0,8),recordEndTime=now.toTimeString().slice(0,8),recordDate=editing?.recordDate||now.toISOString().slice(0,10);
+    const voiceMode=action==='Estudiante'?($('#voiceModeChips .chip.active')?.dataset.voiceMode||'Individual'):'Individual';
+    const personRequired=action==='Estudiante'||action==='Docente',group=action==='Estudiante'&&voiceMode==='Grupal';
+    const personType=action==='Estudiante'?(group?'Grupo':($('#studentStatusChips .chip.active')?.dataset.studentStatus||'Estudiante')):(action==='Docente'?'Docente':'');
+    const dimension=items.map(x=>x.dimension).filter(Boolean).join(' || '),queObservo=items.map(x=>x.queObservo).filter(Boolean).join(' || '),detail=items.map(x=>x.detail||x.transcript).filter(Boolean).join(' || '),nature=[...new Set(items.map(x=>x.nature).filter(Boolean))].join(' | '),transcript=items.map(x=>x.transcript).filter(Boolean).join('\n--- Ítem ---\n');
     const record={
-      recordId, visitId:state.visitId, actionKey:action, systemEvent:'REGISTRO_CAMPO', visitStatus:'Activa', visitEndDate:'', visitEndTime:'', durationMinutes:'',
-      visitDate:state.visitMeta.dateISO, visitStartTime:state.visitMeta.timeISO, recordTime:editing?.recordTime||new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now), updatedTime:new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now),
-      visitorName:state.visitMeta.visitorName, visitorEmail:state.visitMeta.visitorEmail, visitorArea:state.visitMeta.area, visitorRole:state.visitMeta.role,
-      campus:state.visitMeta.campus, modality:state.visitMeta.modality, platform:state.visitMeta.platform, virtualSession:state.visitMeta.sessionId,
-      address:state.visitMeta.modality==='Presencial'?(state.location?.address||getCampusOfflineAddress()||''):'', latitude:state.visitMeta.modality==='Presencial'?(state.location?.lat??''):'', longitude:state.visitMeta.modality==='Presencial'?(state.location?.lng??''):'', accuracyM:state.visitMeta.modality==='Presencial'&&state.location?.accuracy?Math.round(state.location.accuracy):'',
-      recordType:(actionConfig[action]||actionConfig.Hallazgo).label, personType:personRequired?(action==='Estudiante'?'Estudiante':'Docente'):'', personName:personRequired?$('#personName').value.trim():'', personCode:personRequired?$('#personCode').value.trim():'',
-      program:$('#contextProgramField').classList.contains('hidden')?'':$('#captureProgram').value.trim(), course:$('#contextCourseField').classList.contains('hidden')?'':$('#captureCourse').value.trim(), cycle:$('#contextCycleField').classList.contains('hidden')?'':$('#captureCycle').value.trim(), turn:$('#contextTurnField').classList.contains('hidden')?'':$('#captureTurn').value, section:$('#contextSectionField').classList.contains('hidden')?'':$('#captureSection').value.trim(), space:$('#contextSpaceField').classList.contains('hidden')?'':$('#captureSpace').value.trim(), reference:$('#contextReferenceField').classList.contains('hidden')?'':$('#captureReference').value.trim(),
-      dimension:$('#captureDimension').value, criteria:normalizedCriteria.join(' | '), criteriaOther, nature:nature[0]||'', recurrence:editing?.recurrence||'', followup:editing?.followup||'', derivationArea:editing?.derivationArea||'', derivationName:editing?.derivationName||'', derivationEmail:editing?.derivationEmail||'', derivationStatus:editing?.derivationStatus||'', derivationAt:editing?.derivationAt||'',
-      note, transcript, evidenceCount:attachmentRefs.length, evidenceNames:attachmentRefs.map(a=>a.name).join(' | '), evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '), attachmentRefs, evidenceSyncStatus:attachmentRefs.length?'Pendiente de sincronización':'Sin evidencias', time:editing?.time||now
+      ...(editing||{}),historyId:recordId,recordId,visitId:state.visitId,actionKey:action,systemEvent:'REGISTRO_CAMPO',recordDate,recordStartAt:startAt,recordStartTime,recordEndAt:endAt,recordEndTime,recordDurationSeconds:durationSeconds,recordDurationMinutes:Math.round(durationSeconds/6)/10,recordStatus:'Registrado',
+      visitorName:state.visitMeta.visitorName,visitorEmail:state.visitMeta.visitorEmail,visitorArea:state.visitMeta.area,visitorRole:state.visitMeta.role,campus:state.visitMeta.campus,modality:state.visitMeta.modality,platform:state.visitMeta.platform,virtualSession:state.visitMeta.sessionId,
+      address:state.visitMeta.modality==='Presencial'?(state.location?.address||getCampusOfflineAddress()||''):'',latitude:state.visitMeta.modality==='Presencial'?(state.location?.lat??''):'',longitude:state.visitMeta.modality==='Presencial'?(state.location?.lng??''):'',accuracyM:state.visitMeta.modality==='Presencial'&&state.location?.accuracy?Math.round(state.location.accuracy):'',
+      recordType:(actionConfig[action]||actionConfig.Hallazgo).label,voiceMode,personType,personName:personRequired&&!group?$('#personName').value.trim():'',personCode:personRequired&&!group?$('#personCode').value.trim():'',groupInterviewCount:group?Number($('#groupInterviewCount').value||0):'',
+      program:$('#contextProgramField').classList.contains('hidden')?'':$('#captureProgram').value.trim(),course:$('#contextCourseField').classList.contains('hidden')?'':$('#captureCourse').value.trim(),cycle:$('#contextCycleField').classList.contains('hidden')?'':$('#captureCycle').value.trim(),turn:$('#contextTurnField').classList.contains('hidden')?'':$('#captureTurn').value,section:$('#contextSectionField').classList.contains('hidden')?'':$('#captureSection').value.trim(),studentCount:$('#contextStudentCountField')?.classList.contains('hidden')?'':Number($('#captureStudentCount').value||0),space:$('#contextSpaceField').classList.contains('hidden')?'':$('#captureSpace').value.trim(),reference:$('#contextReferenceField').classList.contains('hidden')?'':$('#captureReference').value.trim(),
+      dimension,criteria:queObservo,queObservo,criteriaOther:items.map(x=>x.criteriaOther).filter(Boolean).join(' || '),nature,detailFinding:detail,note:detail,transcript,itemCount:items.length,items:items.map((it,i)=>({itemNumber:i+1,dimension:it.dimension,queObservo:it.queObservo,criteriaOther:it.criteriaOther,nature:it.nature,detail:it.detail,transcript:it.transcript,evidenceCount:it.evidenceCount,evidenceNames:it.evidenceNames})),itemsJson:JSON.stringify(items.map((it,i)=>({itemNumber:i+1,dimension:it.dimension,queObservo:it.queObservo,nature:it.nature,detail:it.detail,transcript:it.transcript,evidenceCount:it.evidenceCount,evidenceNames:it.evidenceNames}))),
+      recurrence:editing?.recurrence||'',followup:editing?.followup||'',derivationArea:editing?.derivationArea||'',derivationName:editing?.derivationName||'',derivationEmail:editing?.derivationEmail||'',derivationStatus:editing?.derivationStatus||'',derivationAt:editing?.derivationAt||'',evidenceCount:attachmentRefs.length,evidenceNames:attachmentRefs.map(a=>a.name).join(' | '),evidenceTypes:attachmentRefs.map(a=>a.type||'archivo').join(' | '),evidenceSyncStatus:attachmentRefs.length?(editing?.evidenceSyncStatus||'Pendiente de reintento'):'Sin evidencias',attachmentRefs,time:editing?.time||now
     };
-    let evidenceResult={total:0,uploaded:0,ok:true,error:''};
-    if(attachmentRefs.length){
-      const saveBtn=$('#saveCapture'),saveText=saveBtn.textContent;saveBtn.disabled=true;saveBtn.textContent='Subiendo evidencia…';
-      evidenceResult=await syncRecordEvidenceToSupabase(recordId);
-      record.evidenceSyncStatus=evidenceResult.ok?'Sincronizada en nube':'Pendiente de sincronización';
-      saveBtn.disabled=false;saveBtn.textContent=saveText;
-    }
     if(editing){const i=state.records.findIndex(r=>r.recordId===recordId);state.records[i]=record;showToast(`Registro ${recordId} actualizado.`)}else{state.records.unshift(record);if(action==='Aula')state.counters.rooms++;showToast(`Registro ${recordId} guardado.`)}
-    try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}))}catch(e){}
-    persistUserHistory(record);
-    if(attachmentRefs.length){
-      if(evidenceResult.ok)showToast(`Evidencia${evidenceResult.uploaded===1?'':'s'} sincronizada${evidenceResult.uploaded===1?'':'s'} en la nube.`);
-      else{console.warn('Evidencia pendiente de sincronización:',evidenceResult.error||'sin detalle');showToast('Registro guardado. Evidencia pendiente de nube.');}
-    }
-    state.editingRecordId=null; updateCounters(); renderRecent(); closeCapture();
+    try{localStorage.setItem('rutaAulaDraftRecords',JSON.stringify({visitMeta:state.visitMeta,records:state.records,counters:state.counters,updatedAt:new Date().toISOString()}));localStorage.removeItem(PENDING_CAPTURE_KEY)}catch(e){}
+    persistUserHistory(record);if(record.evidenceCount&&navigator.onLine){setTimeout(()=>loadAttachments(record).then(files=>files.length?uploadEvidenceFiles(record,files):0).catch(()=>{}),150)}state.editingRecordId=null;state.pendingItems=[];state.currentRecordStartedAt=null;updateCounters();renderRecent();closeCapture();
   });
 
   function updateCounters(){const el=$('#kpiRooms');if(el)el.textContent=state.counters.rooms}
   function renderRecent(){
-    const box=$('#recentList'); if(!state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').length){box.innerHTML='<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;font-size:12px;color:var(--muted);padding:10px 0">Aún no hay registros.</div>';return}
-    box.innerHTML=state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').slice(0,6).map(r=>{const cls=r.nature==='Alerta'?'red':r.nature==='Fortaleza'?'green':'amber';const detail=r.note?r.note.slice(0,70)+(r.note.length>70?'…':''):[r.dimension,r.space||r.program].filter(Boolean).join(' · ');return `<div class="recent-item"><span class="status-dot ${cls}"></span><div><strong>${escapeHtml(r.recordType)}${r.personName?`: ${escapeHtml(r.personName)}`:''}</strong><span>${escapeHtml(detail||'Registro guardado')}</span><div class="recent-actions"><button type="button" class="recent-btn" data-edit-record="${escapeHtml(r.recordId)}">Ver / editar</button>${r.evidenceCount?`<span class="attachment-count">📎 ${r.evidenceCount} adjunto${r.evidenceCount===1?'':'s'}</span>`:''}</div></div></div>`}).join('');
+    const box=$('#recentList');let pending=null;try{pending=JSON.parse(localStorage.getItem(PENDING_CAPTURE_KEY)||'null')}catch(e){};const pendingHtml=pending?`<div class="recent-item"><span class="status-dot amber"></span><div><strong>Registro pendiente local</strong><span>${escapeHtml((actionConfig[pending.action]||actionConfig.Hallazgo).label)} · Guardado en este dispositivo</span><div class="recent-actions"><button type="button" class="recent-btn" data-resume-pending="${escapeHtml(pending.action||'Hallazgo')}">Editar</button><span class="pending-badge">Pendiente</span></div></div></div>`:'';if(!state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').length){box.innerHTML=pendingHtml||'<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;font-size:12px;color:var(--muted);padding:10px 0">Aún no hay registros.</div>';return}
+    box.innerHTML=pendingHtml+state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').slice(0,6).map(r=>{const cls=r.nature==='Alerta'?'red':r.nature==='Fortaleza'?'green':'amber';const detail=r.note?r.note.slice(0,70)+(r.note.length>70?'…':''):[r.dimension,r.space||r.program].filter(Boolean).join(' · ');return `<div class="recent-item"><span class="status-dot ${cls}"></span><div><strong>${escapeHtml(r.recordType)}${r.personName?`: ${escapeHtml(r.personName)}`:''}</strong><span>${escapeHtml(detail||'Registro guardado')}</span><div class="recent-actions"><button type="button" class="recent-btn" data-edit-record="${escapeHtml(r.recordId)}">Ver / editar</button>${r.evidenceCount?`<button type="button" class="recent-btn" data-reupload-evidence="${escapeHtml(r.recordId)}">Volver a subir evidencia</button><span class="attachment-count">📎 ${r.evidenceCount} adjunto${r.evidenceCount===1?'':'s'} · ${escapeHtml(r.evidenceSyncStatus||'Pendiente')}</span>`:''}</div></div></div>`}).join('');
   }
 
-  $('#recentList').addEventListener('click',async e=>{const btn=e.target.closest('[data-edit-record]');if(!btn)return;const record=state.records.find(r=>r.recordId===btn.dataset.editRecord);if(!record)return;openCapture(record.actionKey||'Hallazgo');state.editingRecordId=record.recordId;$('#sheetEyebrow').textContent='Editar registro';$('#saveCapture').textContent='Actualizar registro';
-    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';$('#captureNote').value=record.note||'';$('#captureDimension').value=record.dimension||'';
-    const criteriaParts=(record.criteria||'').split(' | ');$$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',c.textContent==='Otro'?criteriaParts.some(x=>x.startsWith('Otro')):criteriaParts.includes(c.textContent)));$('#criteriaOther').value=record.criteriaOther||((criteriaParts.find(x=>x.startsWith('Otro: '))||'').replace(/^Otro:\s*/,''));syncCriteriaOther();$$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent===record.nature));
-    if(record.transcript){$('#transcriptBox').textContent=record.transcript} state.currentAttachments=await loadAttachments(record);renderAttachments();
+  $('#recentList').addEventListener('click',async e=>{const resume=e.target.closest('[data-resume-pending]');if(resume){openCapture(resume.dataset.resumePending||'Hallazgo');return}const reup=e.target.closest('[data-reupload-evidence]');if(reup){const rec=state.records.find(r=>r.recordId===reup.dataset.reuploadEvidence);await retryEvidenceUpload(rec);return}const btn=e.target.closest('[data-edit-record]');if(!btn)return;const record=state.records.find(r=>r.recordId===btn.dataset.editRecord);if(!record)return;openCapture(record.actionKey||'Hallazgo');state.editingRecordId=record.recordId;$('#sheetEyebrow').textContent='Editar registro';$('#saveCapture').textContent='Actualizar registro';
+    $('#captureProgram').value=record.program||'';$('#captureCourse').value=record.course||'';$('#captureCycle').value=record.cycle||'';$('#captureTurn').value=record.turn||'';$('#captureSection').value=record.section||'';if($('#captureStudentCount'))$('#captureStudentCount').value=record.studentCount||'';$('#captureSpace').value=record.space||'';$('#captureReference').value=record.reference||'';$('#personName').value=record.personName||'';$('#personCode').value=record.personCode||'';if($('#groupInterviewCount'))$('#groupInterviewCount').value=record.groupInterviewCount||'';$$('#voiceModeChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.voiceMode===(record.voiceMode||'Individual')));$$('#studentStatusChips .chip').forEach(c=>c.classList.toggle('active',c.dataset.studentStatus===record.personType));updateStudentVoiceMode();
+    const its=Array.isArray(record.items)&&record.items.length?record.items:[{dimension:record.dimension,queObservo:record.queObservo||record.criteria,criteriaOther:record.criteriaOther,nature:record.nature,detail:record.detailFinding||record.note,transcript:record.transcript,evidenceCount:record.evidenceCount,evidenceNames:record.evidenceNames}];const current=its[its.length-1]||{};state.pendingItems=its.slice(0,-1).map(x=>({...x,attachments:[]}));renderItemsAccordion();$('#captureDimension').value=current.dimension||'';renderObservationOptions();const criteriaParts=String(current.queObservo||'').split(' | ');$$('#criteriaChips .chip').forEach(c=>c.classList.toggle('active',c.textContent==='Otro'?criteriaParts.some(x=>x.startsWith('Otro')):criteriaParts.includes(c.textContent)));$('#criteriaOther').value=current.criteriaOther||((criteriaParts.find(x=>x.startsWith('Otro: '))||'').replace(/^Otro:\s*/,''));syncCriteriaOther();$$('#natureChips .chip').forEach(c=>c.classList.toggle('active',c.textContent===current.nature));$('#captureNote').value=current.detail||'';if(current.transcript){$('#transcriptBox').textContent=current.transcript}state.currentRecordStartedAt=record.recordStartAt||new Date().toISOString();state.currentAttachments=await loadAttachments(record);renderAttachments();
   });
 
   // Excel-friendly package with attachments: one column per field, UTF-8 + semicolon delimiter.
@@ -1740,7 +1797,7 @@ async function flushPendingDerivations(){
   function makeZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;for(const f of files){const name=enc.encode(f.name),data=f.data instanceof Uint8Array?f.data:new Uint8Array(f.data),crc=crc32(data),dt=dosDateTime();const local=concatBytes([u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(dt.time),u16(dt.date),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),name,data]);locals.push(local);const central=concatBytes([u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(dt.time),u16(dt.date),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset),name]);centrals.push(central);offset+=local.length}const centralBytes=concatBytes(centrals),localBytes=concatBytes(locals),eocd=concatBytes([u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(centralBytes.length),u32(localBytes.length),u16(0)]);return concatBytes([localBytes,centralBytes,eocd])}
   async function attachmentFilesForRecord(record){const atts=await loadAttachments(record);return atts.map((a,i)=>({att:a,index:i+1,path:`adjuntos/${sanitizeFileName(record.recordId)}/${String(i+1).padStart(2,'0')}_${sanitizeFileName(attName(a))}`}))}
   async function downloadExcelData(){
-    const fieldRecords=state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO'||r.systemEvent==='CIERRE_VISITA');
+    const fieldRecords=state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO');
     if(!fieldRecords.length){showToast('Aún no hay registros para exportar.');return}
     showToast('Preparando registros y adjuntos…');
     const allAtt={};let maxAtt=0,zipFiles=[];
@@ -1748,13 +1805,16 @@ async function flushPendingDerivations(){
       const list=await attachmentFilesForRecord(r);allAtt[r.recordId]=list;maxAtt=Math.max(maxAtt,list.length);
       for(const item of list){const blob=attBlob(item.att);if(blob)zipFiles.push({name:item.path,data:new Uint8Array(await blob.arrayBuffer())})}
     }
-    const cols=[['ID_REGISTRO','recordId'],['ID_VISITA','visitId'],['EVENTO_SISTEMA','systemEvent'],['ESTADO_VISITA','visitStatus'],['FECHA_FIN_VISITA','visitEndDate'],['HORA_FIN_VISITA','visitEndTime'],['DURACION_MINUTOS','durationMinutes'],['FECHA_VISITA','visitDate'],['HORA_INICIO_VISITA','visitStartTime'],['HORA_REGISTRO','recordTime'],['HORA_ACTUALIZACION','updatedTime'],['VISITANTE_NOMBRE','visitorName'],['VISITANTE_CORREO','visitorEmail'],['AREA_VISITANTE','visitorArea'],['ROL_VISITANTE','visitorRole'],['SEDE','campus'],['MODALIDAD','modality'],['PLATAFORMA_VIRTUAL','platform'],['SESION_VIRTUAL','virtualSession'],['DIRECCION','address'],['LATITUD','latitude'],['LONGITUD','longitude'],['PRECISION_M','accuracyM'],['TIPO_REGISTRO','recordType'],['TIPO_PERSONA','personType'],['PERSONA_NOMBRE','personName'],['PERSONA_CODIGO_DNI','personCode'],['PROGRAMA_CARRERA','program'],['CURSO_ASIGNATURA','course'],['CICLO','cycle'],['TURNO','turn'],['AULA_SECCION','section'],['ESPACIO_AMBIENTE','space'],['CONTEXTO_REFERENCIA','reference'],['DIMENSION','dimension'],['CRITERIOS','criteria'],['OTRO_OBSERVADO','criteriaOther'],['NATURALEZA','nature'],['RECURRENCIA','recurrence'],['ACCION_POSTERIOR','followup'],['AREA_DERIVACION','derivationArea'],['PERSONA_DERIVACION','derivationName'],['CORREO_DERIVACION','derivationEmail'],['ESTADO_DERIVACION','derivationStatus'],['FECHA_DERIVACION','derivationAt'],['NOTA','note'],['TRANSCRIPCION','transcript'],['N_EVIDENCIAS','evidenceCount'],['NOMBRES_EVIDENCIAS','evidenceNames'],['RUTA_ADJUNTOS','attachmentPaths']];
+    const cols=[...exportRecordColumns(),['RUTA_ADJUNTOS','attachmentPaths']];
     for(let i=1;i<=maxAtt;i++)cols.push([`ADJUNTO_${i}`,`__att${i}`]);
     const header=cols.map(c=>csvCell(c[0])).join(';');const rows=[];
     for(const r of fieldRecords){
-      const paths=(allAtt[r.recordId]||[]).map(x=>x.path);const rr={...r,attachmentPaths:paths.join(' | ')};
-      (allAtt[r.recordId]||[]).forEach((x,i)=>{rr[`__att${i+1}`]=`=HIPERVINCULO("${x.path.replace(/\//g,'\\\\')}";"Abrir adjunto ${i+1}")`});
-      rows.push(cols.map(c=>csvCell(rr[c[1]]??'')).join(';'));
+      const paths=(allAtt[r.recordId]||[]).map(x=>x.path);
+      for(const baseRow of exportItemRows([r])){
+        const rr={...baseRow,attachmentPaths:paths.join(' | ')};
+        (allAtt[r.recordId]||[]).forEach((x,i)=>{rr[`__att${i+1}`]=`=HIPERVINCULO("${x.path.replace(/\//g,'\\')}";"Abrir adjunto ${i+1}")`});
+        rows.push(cols.map(c=>csvCell(rr[c[1]]??'')).join(';'));
+      }
     }
     const csv='\uFEFF'+[header,...rows].join('\r\n');
     zipFiles.unshift({name:'Ruta_SISE_Registros.csv',data:new TextEncoder().encode(csv)});
@@ -1826,23 +1886,8 @@ async function flushPendingDerivations(){
   $('#downloadAllHistory')?.addEventListener('click',downloadAllHistory);
   $('#historyList')?.addEventListener('click',async e=>{
     const view=e.target.closest('[data-history-view]');if(view){const id=view.dataset.historyView,detail=document.getElementById(`history-detail-${id}`);if(detail){const hidden=detail.classList.toggle('hidden');view.textContent=hidden?'Ver detalle':'Ocultar detalle';}return}
-    const up=e.target.closest('[data-history-upload]');if(up){state.historyEvidenceRecordId=up.dataset.historyUpload;const input=$('#historyEvidenceInput');if(input){input.value='';input.click();}return}
+    const hre=e.target.closest('[data-history-reupload]');if(hre){const record=findHistoryRecord(hre.dataset.historyReupload)||state.records.find(r=>r.recordId===hre.dataset.historyReupload);if(record){await retryEvidenceUpload(record);renderHistory()}return}
     const dl=e.target.closest('[data-history-download]');if(dl){await downloadHistoryRecord(findHistoryRecord(dl.dataset.historyDownload));}
-  });
-  $('#historyEvidenceInput')?.addEventListener('change',async e=>{
-    const files=[...(e.target.files||[])];const record=findHistoryRecord(state.historyEvidenceRecordId);if(!record||!files.length)return;
-    const originalSubtitle=$('#historyModalSubtitle').textContent;$('#historyModalSubtitle').textContent=`Subiendo evidencia para ${record.recordId}…`;
-    try{
-      const result=await uploadHistoryEvidence(record,files);
-      remoteHistoryCache=await fetchRemoteHistoryJSONP(currentUserEmail()).catch(()=>remoteHistoryCache);
-      renderHistory();
-      $('#historyModalSubtitle').textContent=`${result.uploaded} evidencia(s) subida(s) correctamente para ${record.recordId}.`;
-      showToast('Evidencia asociada y guardada en la nube.');
-    }catch(err){
-      console.warn('Carga manual de evidencia:',err);
-      $('#historyModalSubtitle').textContent=originalSubtitle;
-      alert('No se pudo subir la evidencia. '+String(err?.message||err));
-    }finally{state.historyEvidenceRecordId='';e.target.value='';}
   });
   $('#closeDeriveModal')?.addEventListener('click',closeDerivation);$('#cancelDeriveBtn')?.addEventListener('click',closeDerivation);$('#deriveModal')?.addEventListener('click',e=>{if(e.target===$('#deriveModal'))closeDerivation()});
 
@@ -1850,14 +1895,12 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const record=state.records.find(r=>r.recordId===state.derivationRecordId);if(!record)return;
   const name=$('#deriveName').value.trim(),email=$('#deriveEmail').value.trim(),email2=$('#deriveEmail2').value.trim(),email3=$('#deriveEmail3').value.trim(),message=$('#deriveMessage').value.trim();const area=recommendationFor(record).area;
   const okName=name.length>2,okEmail=validEmail(email),okEmail2=!email2||validEmail(email2),okEmail3=!email3||validEmail(email3);$('#deriveNameField').classList.toggle('invalid',!okName);$('#deriveEmailField').classList.toggle('invalid',!okEmail);$('#deriveEmail2Field').classList.toggle('invalid',!okEmail2);$('#deriveEmail3Field').classList.toggle('invalid',!okEmail3);if(!okName||!okEmail||!okEmail2||!okEmail3)return;
-  const emails=[email,email2,email3].filter(Boolean).filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i);
   const btn=$('#confirmDeriveBtn');btn.disabled=true;const originalText=btn.textContent;btn.textContent='Enviando…';
   const subject=`Ruta SISE · Derivación ${record.recordId}`;
   const body=buildDerivationMail(record,name,area,message);
   const payload={
     to:email,
-    cc:[email2,email3].filter(Boolean).filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i && v.toLowerCase()!==email.toLowerCase()).join(','),
-    recipients:emails,
+    cc:[email2,email3].filter(Boolean).join(','),
     name,
     subject,
     body,
@@ -1871,7 +1914,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
     },
     attachments:(record.attachmentRefs||[]).map(a=>({name:a.name||'',type:a.type||'',id:a.id||''}))
   };
-  record.derivationArea=area;record.derivationName=name;record.derivationEmail=emails.join(' | ');record.derivationEmailPrimary=email;record.derivationEmailCc1=email2;record.derivationEmailCc2=email3;record.derivationAt=new Date().toISOString();
+  record.derivationArea=area;record.derivationName=name;record.derivationEmail=[email,email2,email3].filter(Boolean).join(' | ');record.derivationEmailPrimary=email;record.derivationEmailCc1=email2;record.derivationEmailCc2=email3;record.derivationAt=new Date().toISOString();
   if(!record.followup||record.followup==='Solo registrar')record.followup='Requiere seguimiento';
   try{
     if(!navigator.onLine){
@@ -1979,7 +2022,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   async function startAudioRecorder(){
     if(!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder==='undefined')return null;
     try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:{ideal:true},noiseSuppression:{ideal:true},autoGainControl:{ideal:true},channelCount:{ideal:1},sampleRate:{ideal:48000}}});
       state.micStream=stream;
       state.mediaChunks=[];
       const mime=preferredAudioMime();
@@ -2235,7 +2278,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   const el=document.getElementById(id);
   if(el){el.addEventListener('input',updateHeaderIdentity);el.addEventListener('change',updateHeaderIdentity)}
 });
-restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>flushRemoteQueue(),700);setTimeout(()=>syncStoredEvidenceToSupabase(),1200);window.addEventListener('online',()=>setTimeout(()=>syncStoredEvidenceToSupabase(),500));
+restoreLoginIdentity();updateHeaderIdentity();setTimeout(()=>flushRemoteQueue(),700);
 
 function openExitModal(){
   const active=state.visitStart&&!state.visitClosed;
