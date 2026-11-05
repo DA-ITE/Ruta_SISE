@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Ruta SISE · SISE v67</title>
+  <title>Ruta SISE · SISE v68</title>
   <style>
     :root{
       --sise:#c8173e;
@@ -559,6 +559,23 @@
     .cascade-group{display:grid;grid-template-columns:1fr;gap:0}
     .control select:disabled{background:#f8fafc;color:#94a3b8;cursor:not-allowed;border-color:#e2e8f0}
     #captureCourseSel,#captureCareer,#captureFaculty{text-overflow:ellipsis}
+
+    /* v68 · campos faltantes, regrabar, ítems */
+    .missing-box{border:1px solid #f2c4cf;background:#fff5f7;border-radius:12px;padding:12px 14px;margin:0 0 14px;color:#7a1430;font-size:13px;line-height:1.45}
+    .missing-box strong{display:block;font-size:14px;margin-bottom:2px}
+    .missing-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+    .missing-link{border:1px solid #f2c4cf;background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600;color:#9f1239;display:inline-flex;align-items:center;gap:5px}
+    .missing-link:hover{border-color:var(--sise);color:var(--sise)}
+    .missing-link svg{width:12px;height:12px}
+    #visitMissing{margin-top:4px}
+    .field.invalid .chips{outline:2px solid rgba(201,47,61,.18);outline-offset:4px;border-radius:12px}
+    .mic-actions{display:flex;justify-content:center;margin-top:10px}
+    .mic-actions .btn{gap:7px}
+    #currentItemLabel:not(:empty){display:inline-flex;margin-right:6px;padding:2px 7px;border-radius:999px;background:var(--soft);color:#9f1239}
+    .item-current-note{margin-top:10px;padding:11px 12px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc;font-size:12px;line-height:1.5;color:#475569}
+    .item-current-note .recent-actions{margin-top:8px}
+    .recent-btn.danger{color:#b4233a;border-color:#efc7cf}
+    .recent-btn.danger:hover{background:#fff5f7;border-color:#b4233a;color:#b4233a}
 </style>
 </head>
 <body>
@@ -742,6 +759,7 @@
             </div>
           </div>
 
+          <div class="missing-box hidden" id="visitMissing" role="alert" aria-live="polite"></div>
           <div class="form-actions">
             <button class="btn btn-primary" type="submit">Continuar <span aria-hidden="true">→</span></button>
           </div>
@@ -916,6 +934,7 @@
     <button class="icon-btn" id="closeSheet" aria-label="Cerrar">✕</button>
   </header>
   <div class="sheet-body">
+    <div class="missing-box hidden" id="captureMissing" role="alert" aria-live="polite"></div>
     <section class="sheet-section">
       <div class="sheet-kicker">Datos segmentados</div>
       <h4 class="title-with-info">Contexto del registro <button type="button" class="info-btn" aria-label="Información sobre campos" data-info-title="Campos según el tipo de registro" data-info-text="La plataforma muestra solo los datos útiles para la opción seleccionada. Por ejemplo, Observar sede no exige carrera, curso ni ciclo; Observar clase sí muestra esos campos para poder segmentar el análisis.">i</button></h4>
@@ -948,7 +967,7 @@
     </section>
 
     <section class="sheet-section" id="dimensionSection">
-      <div class="sheet-kicker">Paso 1 del hallazgo</div>
+      <div class="sheet-kicker"><span id="currentItemLabel"></span>Paso 1 del hallazgo</div>
       <h4>Dimensión <span class="required">*</span></h4>
       <div class="field compact"><div class="control"><select id="captureDimension" class="no-icon"><option value="">Selecciona una dimensión</option></select><span class="arrow">⌄</span></div><span class="error">Selecciona una dimensión.</span></div>
     </section>
@@ -968,7 +987,7 @@
     <section class="sheet-section">
       <div class="sheet-kicker">Clasificación</div>
       <h4 class="title-with-info">Datos para análisis <button type="button" class="info-btn" aria-label="Información sobre clasificación" data-info-title="Clasificación del registro" data-info-text="La dimensión organiza el tipo de situación y la naturaleza indica el nivel de atención o el efecto del hallazgo. Usa Alerta cuando requiere atención prioritaria; Brecha cuando existe una diferencia relevante frente a lo esperado; Oportunidad cuando se identifica una mejora posible; y Fortaleza cuando es una práctica positiva que conviene mantener o replicar.">i</button></h4>
-      <div class="field"><div class="classification-label">Naturaleza <span class="required">*</span> <button type="button" class="info-btn" aria-label="Información sobre naturaleza" data-info-title="Naturaleza del hallazgo" data-info-text="Las opciones están ordenadas por nivel de atención o efecto. Alerta: requiere atención prioritaria; por ejemplo, una condición que impide desarrollar la clase. Brecha: existe una diferencia relevante frente a lo esperado; por ejemplo, un equipo necesario que no está disponible. Oportunidad: existe una mejora posible; por ejemplo, simplificar un proceso. Fortaleza: práctica positiva que conviene mantener o replicar; por ejemplo, una estrategia docente que genera alta participación.">i</button></div><p class="priority-hint">Orden de atención: Alerta → Brecha → Oportunidad → Fortaleza.</p><div class="chips" id="natureChips"><button type="button" class="chip">Alerta</button><button type="button" class="chip">Brecha</button><button type="button" class="chip">Oportunidad</button><button type="button" class="chip">Fortaleza</button></div></div>
+      <div class="field" id="fieldNature"><div class="classification-label">Naturaleza <span class="required">*</span> <button type="button" class="info-btn" aria-label="Información sobre naturaleza" data-info-title="Naturaleza del hallazgo" data-info-text="Las opciones están ordenadas por nivel de atención o efecto. Alerta: requiere atención prioritaria; por ejemplo, una condición que impide desarrollar la clase. Brecha: existe una diferencia relevante frente a lo esperado; por ejemplo, un equipo necesario que no está disponible. Oportunidad: existe una mejora posible; por ejemplo, simplificar un proceso. Fortaleza: práctica positiva que conviene mantener o replicar; por ejemplo, una estrategia docente que genera alta participación.">i</button></div><p class="priority-hint">Orden de atención: Alerta → Brecha → Oportunidad → Fortaleza.</p><div class="chips" id="natureChips"><button type="button" class="chip">Alerta</button><button type="button" class="chip">Brecha</button><button type="button" class="chip">Oportunidad</button><button type="button" class="chip">Fortaleza</button></div></div>
     </section>
 
     <section class="sheet-section" id="detailFindingSection">
@@ -983,6 +1002,7 @@
         <div id="speechCompat" style="margin-top:7px;font-size:11px;line-height:1.45;color:#64748b">Ruta SISE detectará automáticamente el motor compatible del celular. En iPhone/iPad prioriza Safari; en Android, Chrome.</div>
         <div class="transcript" id="transcriptBox">La transcripción aparecerá aquí y podrás revisarla antes de guardar.</div>
         <audio id="audioPlayback" class="audio-playback" controls></audio>
+        <div class="mic-actions"><button type="button" class="btn btn-outline btn-sm hidden" id="reRecordBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><circle cx="12" cy="12" r="3"/></svg>Grabar de nuevo</button></div>
       </div>
     </section>
 
@@ -1544,25 +1564,33 @@ async function flushPendingDerivations(){
     }
   }));
 
-  function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
-  function validateForm(){
-    const rules=[['#fullName','#fieldName',v=>v.trim().length>4],['#email','#fieldEmail',validEmail],['#area','#fieldArea',v=>!!v],['#role','#fieldRole',v=>!!v],['#campus','#fieldCampus',v=>!!v],['#mode','#fieldMode',v=>!!v]];
-    if(state.mode==='Virtual'){
-      rules.push(['#platform','#fieldPlatform',v=>!!v],['#sessionId','#fieldSessionId',v=>v.trim().length>2]);
-    }
-    let ok=true,firstInvalid=null;
-    rules.forEach(([input,field,test])=>{const yes=test($(input).value);$(field)?.classList.toggle('invalid',!yes);if(!yes){ok=false;if(!firstInvalid)firstInvalid=$(input)}});
-    if(state.mode==='Presencial'&&!state.location){
-      showToast('Para una visita presencial, activa la ubicación del teléfono.');
-      $('#requestLocationBtn')?.scrollIntoView({behavior:'smooth',block:'center'});
-      ok=false;
-    }else if(!ok){
-      showToast('Completa todos los campos obligatorios antes de continuar.');
-      firstInvalid?.focus();
-      firstInvalid?.scrollIntoView({behavior:'smooth',block:'center'});
-    }
-    return ok;
+
+  // ---- Campos faltantes: recuadro con la lista y acceso directo a cada campo ----
+  const ARROW_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>';
+  function fieldLabelText(el){const f=el?.closest('.field')||el;const l=f?.querySelector('label,.classification-label');return (l?.textContent||'').replace(/\*/g,'').trim()}
+  function renderMissing(boxSel,list,{scroll=false}={}){
+    const box=$(boxSel);if(!box)return;box._list=list;
+    if(!list.length){box.classList.add('hidden');box.innerHTML='';return}
+    box.innerHTML=`<strong>Falta completar ${list.length} campo${list.length===1?'':'s'}</strong>Toca cada uno para ir directamente.<div class="missing-list">${list.map((x,i)=>`<button type="button" class="missing-link" data-missing="${i}">${ARROW_ICON}${escapeHtml(x.label)}</button>`).join('')}</div>`;
+    box.classList.remove('hidden');
+    if(scroll)box.scrollIntoView({behavior:'smooth',block:'nearest'});
   }
+  function goToMissing(x){const t=x?.el;if(!t)return;t.scrollIntoView({behavior:'smooth',block:'center'});const f=t.matches?.('input,select,textarea')?t:t.querySelector?.('input:not([type=checkbox]),select,textarea');setTimeout(()=>f?.focus?.({preventScroll:true}),350)}
+  ['#captureMissing','#visitMissing'].forEach(sel=>$(sel)?.addEventListener('click',e=>{const b=e.target.closest('[data-missing]');if(b)goToMissing($(sel)._list?.[Number(b.dataset.missing)])}));
+  function validEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)}
+  function validateForm(opts={}){
+    const silent=!!opts.silent;
+    const rules=[['#fullName','#fieldName',v=>v.trim().length>4,'Nombre y apellidos'],['#email','#fieldEmail',validEmail,'Correo institucional válido'],['#area','#fieldArea',v=>!!v,'Área'],['#role','#fieldRole',v=>!!v,'Rol'],['#campus','#fieldCampus',v=>!!v,'Sede'],['#mode','#fieldMode',v=>!!v,'Modalidad de visita']];
+    if(state.mode==='Virtual')rules.push(['#platform','#fieldPlatform',v=>!!v,'Plataforma'],['#sessionId','#fieldSessionId',v=>v.trim().length>2,'Curso / sesión']);
+    const list=[];
+    rules.forEach(([input,field,test,label])=>{const yes=test($(input).value);$(field)?.classList.toggle('invalid',!yes);if(!yes)list.push({label,el:input==='#mode'?$(field):$(input)})});
+    if(state.mode==='Presencial'&&!state.location)list.push({label:'Ubicación del teléfono (toca Activar ubicación)',el:$('#requestLocationBtn')});
+    renderMissing('#visitMissing',list,{scroll:false});
+    if(list.length&&!silent){showToast(list.length===1?`Falta completar: ${list[0].label}.`:`Faltan ${list.length} campos. Revisa la lista resaltada.`);goToMissing(list[0])}
+    return !list.length;
+  }
+  ['input','change'].forEach(ev=>$('#visitForm')?.addEventListener(ev,()=>{if(!$('#visitMissing').classList.contains('hidden'))validateForm({silent:true})}));
+  $('#visitForm')?.addEventListener('click',e=>{if(e.target.closest('.mode-btn')&&!$('#visitMissing').classList.contains('hidden'))setTimeout(()=>validateForm({silent:true}),50)});
   $('#visitForm').addEventListener('submit',e=>{e.preventDefault();if(validateForm())startVisit()});
 
   function startVisit(){
@@ -1678,15 +1706,54 @@ const ACADEMIC_CATALOG={"c":["ACONDICIONAMIENTO DE MEDICAMENTOS Y ENVASADO","ACT
     const criteria=$$('#criteriaChips .chip.active').map(c=>c.textContent.trim()),other=$('#criteriaOther')?.value.trim()||'';
     return {itemId:`ITEM-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,dimension:$('#captureDimension').value,queObservo:criteria.map(x=>x==='Otro'&&other?`Otro: ${other}`:x).join(' | '),criteriaOther:other,nature:$('#natureChips .chip.active')?.textContent.trim()||'',detail:$('#captureNote').value.trim(),transcript:($('#transcriptBox').textContent||'').includes('La transcripción aparecerá')?'':$('#transcriptBox').textContent.trim(),attachments:state.currentAttachments.map(a=>({...a})),evidenceNames:state.currentAttachments.map(attName).join(' | '),evidenceCount:state.currentAttachments.length};
   }
+  function transcriptText(){const t=($('#transcriptBox').textContent||'').trim();return /aparecerá aquí|no ofrece transcripción/.test(t)?'':t}
+  function isCurrentItemBlank(){return !$('#captureDimension').value&&!$$('#criteriaChips .chip.active').length&&!$('#natureChips .chip.active')&&!$('#captureNote').value.trim()&&!transcriptText()&&!state.currentAttachments.length}
+  // Si ya hay ítems agregados y el ítem en curso quedó vacío, se registran solo los ítems de la lista.
+  function shouldSkipCurrentItem(){return state.pendingItems.length>0&&state.editingItemIndex<0&&isCurrentItemBlank()}
+  function currentItemNumber(){return state.editingItemIndex>=0?state.editingItemIndex+1:state.pendingItems.length+1}
+  function itemIssues(){
+    const pre=(state.pendingItems.length||state.editingItemIndex>=0)?`Ítem ${currentItemNumber()}: `:'';
+    const dim=!!$('#captureDimension').value,obsChips=$$('#criteriaChips .chip.active'),obs=obsChips.length>0,
+      otherOn=obsChips.some(c=>c.textContent.trim()==='Otro'),otherOk=!otherOn||!!$('#criteriaOther').value.trim(),
+      nature=!!$('#natureChips .chip.active'),detail=!!($('#captureNote').value.trim()||transcriptText());
+    $('#dimensionSection').classList.toggle('invalid',!dim);$('#criteriaSection').classList.toggle('invalid',!obs);
+    $('#criteriaOtherWrap')?.classList.toggle('invalid',!otherOk);$('#fieldNature')?.classList.toggle('invalid',!nature);$('#fieldCaptureNote')?.classList.toggle('invalid',!detail);
+    const list=[];
+    if(!dim)list.push({label:pre+'Dimensión',el:$('#captureDimension')});
+    if(!obs)list.push({label:pre+'¿Qué observaste?',el:$('#criteriaSection')});
+    if(!otherOk)list.push({label:pre+'Especifica “Otro”',el:$('#criteriaOther')});
+    if(!nature)list.push({label:pre+'Naturaleza',el:$('#fieldNature')});
+    if(!detail)list.push({label:pre+'Detalle del hallazgo',el:$('#captureNote')});
+    return list;
+  }
+  function clearItemInvalid(){['#dimensionSection','#criteriaSection','#criteriaOtherWrap','#fieldNature','#fieldCaptureNote'].forEach(x=>$(x)?.classList.remove('invalid'))}
   function itemValid(show=true){
-    const dim=!!$('#captureDimension').value,obs=$$('#criteriaChips .chip.active').length>0,nature=!!$('#natureChips .chip.active'),detail=!!($('#captureNote').value.trim()||(!($('#transcriptBox').textContent||'').includes('La transcripción aparecerá')&&$('#transcriptBox').textContent.trim()));
-    if(show){$('#dimensionSection').classList.toggle('invalid',!dim);$('#criteriaSection').classList.toggle('invalid',!obs);if(!dim||!obs||!nature||!detail)showToast('Completa Dimensión, ¿Qué observaste?, naturaleza y detalle del hallazgo.');}
-    return dim&&obs&&nature&&detail;
+    const list=itemIssues();
+    if(show){const box=$('#captureMissing');box._mode='item';renderMissing('#captureMissing',list,{scroll:false});if(list.length){showToast(list.length===1?`Falta completar: ${list[0].label}.`:`Faltan ${list.length} campos. Revisa la lista resaltada.`);goToMissing(list[0])}}
+    else if(!list.length)clearItemInvalid();
+    return !list.length;
   }
   function renderItemsAccordion(){
     const box=$('#itemsAccordion');if(!box)return;
+    const lbl=$('#currentItemLabel');if(lbl)lbl.textContent=(state.pendingItems?.length||state.editingItemIndex>=0)?`Ítem ${currentItemNumber()}${state.editingItemIndex>=0?' (editando)':''}`:'';
     if(!state.pendingItems?.length){box.innerHTML='<div class="structured-note">Aún no agregaste ítems adicionales. Completa el hallazgo actual y usa “+ Ítem” si necesitas registrar otro tema dentro del mismo registro.</div>';return}
-    box.innerHTML=state.pendingItems.map((it,i)=>`<article class="item-card${state.editingItemIndex===i?' item-editing':''}"><button type="button" class="item-card-head" data-item-toggle="${i}" aria-expanded="false"><span>Ítem ${i+1} · ${escapeHtml(it.dimension||'Sin dimensión')}</span><span>⌄</span></button><div class="item-card-body hidden" id="item-body-${i}"><strong>¿Qué observaste?</strong><br>${escapeHtml(it.queObservo||'—')}<br><br><strong>Detalle</strong><br>${escapeHtml(it.detail||it.transcript||'—')}<br><br><strong>Clasificación</strong><br>${escapeHtml(it.nature||'—')}${it.evidenceCount?`<br><br><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg> ${it.evidenceCount} evidencia(s)`:''}<div class="recent-actions" style="margin-top:12px"><button type="button" class="recent-btn" data-item-edit="${i}">Editar ítem</button></div></div></article>`).join('');
+    const clip='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 11-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7"/></svg>';
+    const cards=state.pendingItems.map((it,i)=>`<article class="item-card${state.editingItemIndex===i?' item-editing':''}"><button type="button" class="item-card-head" data-item-toggle="${i}" aria-expanded="false"><span>Ítem ${i+1} · ${escapeHtml(it.dimension||'Sin dimensión')}</span><span>⌄</span></button><div class="item-card-body hidden" id="item-body-${i}"><strong>¿Qué observaste?</strong><br>${escapeHtml(it.queObservo||'—')}<br><br><strong>Detalle</strong><br>${escapeHtml(it.detail||it.transcript||'—')}<br><br><strong>Clasificación</strong><br>${escapeHtml(it.nature||'—')}${it.evidenceCount?`<br><br>${clip} ${it.evidenceCount} evidencia(s)`:''}<div class="recent-actions" style="margin-top:12px"><button type="button" class="recent-btn" data-item-edit="${i}">Editar ítem</button><button type="button" class="recent-btn danger" data-item-delete="${i}">Eliminar ítem</button></div></div></article>`).join('');
+    const note=state.editingItemIndex<0?`<div class="item-current-note">Arriba estás llenando el <strong>Ítem ${state.pendingItems.length+1}</strong>. Si lo agregaste por error, déjalo vacío y presiona <strong>Cerrar y registrar</strong>: se registrarán solo los ítems de esta lista.<div class="recent-actions"><button type="button" class="recent-btn danger" data-discard-current>Descartar ítem ${state.pendingItems.length+1}</button></div></div>`:'';
+    box.innerHTML=cards+note;
+  }
+  function deletePendingItem(i){
+    const it=state.pendingItems[i];if(!it)return;
+    if(!confirm(`¿Eliminar el Ítem ${i+1}${it.dimension?` (${it.dimension})`:''}? Esta acción no se puede deshacer.`))return;
+    (it.attachments||[]).forEach(a=>{if(a.url){try{URL.revokeObjectURL(a.url)}catch(e){}}});
+    state.pendingItems.splice(i,1);
+    if(state.editingItemIndex===i)resetCurrentItemFields();else if(state.editingItemIndex>i)state.editingItemIndex--;
+    renderItemsAccordion();persistPendingCaptureSoon();refreshCaptureMissing();showToast(`Ítem ${i+1} eliminado.`);
+  }
+  function discardCurrentItem(){
+    if(!isCurrentItemBlank()&&!confirm(`¿Descartar lo que llenaste en el Ítem ${state.pendingItems.length+1}?`))return;
+    if(state.listening)stopMic();resetCurrentItemFields();clearItemInvalid();renderItemsAccordion();persistPendingCaptureSoon();refreshCaptureMissing();
+    showToast('Ítem descartado. Se registrarán solo los ítems de la lista.');
   }
   function resetCurrentItemFields(){
     $('#captureDimension').value='';renderObservationOptions();$('#criteriaOther').value='';$('#criteriaOtherWrap').classList.add('hidden');$$('#natureChips .chip').forEach(c=>c.classList.remove('active'));$('#captureNote').value='';$('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.';state.currentAttachments=[];renderAttachments();if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){}state.audioObjectUrl=''}$('#audioPlayback').style.display='none';$('#audioPlayback').removeAttribute('src');state.editingItemIndex=-1;$('#addItemBtn').textContent='+ Ítem';
@@ -1707,6 +1774,8 @@ const ACADEMIC_CATALOG={"c":["ACONDICIONAMIENTO DE MEDICAMENTOS Y ENVASADO","ACT
     $('#captureDimension').scrollIntoView({behavior:'smooth',block:'center'});
   }
   $('#itemsAccordion')?.addEventListener('click',e=>{
+    const del=e.target.closest('[data-item-delete]');if(del){e.preventDefault();deletePendingItem(Number(del.dataset.itemDelete));return}
+    if(e.target.closest('[data-discard-current]')){e.preventDefault();discardCurrentItem();return}
     const edit=e.target.closest('[data-item-edit]');if(edit){e.preventDefault();loadItemIntoEditor(Number(edit.dataset.itemEdit));return}
     const b=e.target.closest('[data-item-toggle]');if(!b)return;const body=document.getElementById(`item-body-${b.dataset.itemToggle}`);body?.classList.toggle('hidden');b.setAttribute('aria-expanded',String(body&&!body.classList.contains('hidden')))
   });
@@ -1715,7 +1784,7 @@ const ACADEMIC_CATALOG={"c":["ACONDICIONAMIENTO DE MEDICAMENTOS Y ENVASADO","ACT
     const item=captureItemValues();
     if(state.editingItemIndex>=0){state.pendingItems[state.editingItemIndex]=item;showToast('Cambios del ítem guardados.');}
     else{state.pendingItems.push(item);showToast('Ítem agregado. Registra el siguiente hallazgo dentro del mismo registro.');}
-    renderItemsAccordion();resetCurrentItemFields();state.currentRecordStartedAt=state.currentRecordStartedAt||new Date().toISOString();persistPendingCaptureSoon();
+    resetCurrentItemFields();clearItemInvalid();renderItemsAccordion();renderMissing('#captureMissing',[]);state.currentRecordStartedAt=state.currentRecordStartedAt||new Date().toISOString();persistPendingCaptureSoon();
   });
   function pendingDraftSnapshot(){return {action:state.currentAction,startedAt:state.currentRecordStartedAt,editingRecordId:state.editingRecordId,faculty:$('#captureFaculty').value,career:$('#captureCareer').value,courseSel:$('#captureCourseSel').value,program:$('#captureProgram').value,course:$('#captureCourse').value,cycle:$('#captureCycle').value,turn:$('#captureTurn').value,section:$('#captureSection').value,studentCount:$('#captureStudentCount')?.value||'',space:$('#captureSpace').value,reference:$('#captureReference').value,personName:$('#personName').value,voiceMode:$('#voiceModeChips .chip.active')?.dataset.voiceMode||'',studentStatus:$('#studentStatusChips .chip.active')?.dataset.studentStatus||'',groupInterviewCount:$('#groupInterviewCount')?.value||'',dimension:$('#captureDimension').value,criteria:$$('#criteriaChips .chip.active').map(c=>c.textContent.trim()),criteriaOther:$('#criteriaOther').value,nature:$('#natureChips .chip.active')?.textContent.trim()||'',note:$('#captureNote').value,transcript:$('#transcriptBox').textContent,pendingItems:state.pendingItems.map(it=>({...it,attachments:[]})),editingItemIndex:state.editingItemIndex,savedAt:new Date().toISOString(),status:'Pendiente local'};}
   async function persistPendingCapture(){
@@ -1823,26 +1892,31 @@ const ACADEMIC_CATALOG={"c":["ACONDICIONAMIENTO DE MEDICAMENTOS Y ENVASADO","ACT
     if(err&&message)err.textContent=message;
   }
 
-  function validateCaptureForm(){
-    let ok=true,first=null;
-    const visibleFields=$$('#captureSheet .context-field:not(.hidden)');
-    visibleFields.forEach(f=>{const el=f.querySelector('input,select');if(!el)return;const yes=String(el.value||'').trim()!=='';f.classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||el}});
+  function validateCaptureForm(opts={}){
+    const silent=!!opts.silent,list=[];
+    $$('#captureSheet .context-field:not(.hidden)').forEach(f=>{const el=f.querySelector('input,select');if(!el)return;const yes=String(el.value||'').trim()!=='';f.classList.toggle('invalid',!yes);if(!yes)list.push({label:fieldLabelText(el),el})});
     const action=state.currentAction,isStudent=action==='Estudiante',isDocente=action==='Docente';
+    const need=(ok,field,label,el)=>{$(field)?.classList.toggle('invalid',!ok);if(!ok)list.push({label,el:el||$(field)})};
     if(isStudent){
-      const mode=$('#voiceModeChips .chip.active')?.dataset.voiceMode||'';$('#fieldVoiceMode').classList.toggle('invalid',!mode);if(!mode){ok=false;first=first||$('#fieldVoiceMode')}
-      if(mode==='Grupal'){const n=Number($('#groupInterviewCount').value||0);$('#fieldGroupCount').classList.toggle('invalid',n<2);if(n<2){ok=false;first=first||$('#groupInterviewCount')}}
-      else{const st=$('#studentStatusChips .chip.active')?.dataset.studentStatus||'';$('#fieldStudentStatus').classList.toggle('invalid',!st);if(!st){ok=false;first=first||$('#fieldStudentStatus')};[['#personName','#fieldPersonName']].forEach(([a,b])=>{const yes=!!$(a).value.trim();$(b).classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||$(a)}})}
-    }else if(isDocente){[['#personName','#fieldPersonName']].forEach(([a,b])=>{const yes=!!$(a).value.trim();$(b).classList.toggle('invalid',!yes);if(!yes){ok=false;first=first||$(a)}})}
-    if(!itemValid(false)){ok=false;first=first||$('#captureDimension')}
-    if(!ok){showToast('Completa todos los campos obligatorios antes de cerrar y registrar.');first?.scrollIntoView?.({behavior:'smooth',block:'center'})}
-    return ok;
+      const mode=$('#voiceModeChips .chip.active')?.dataset.voiceMode||'';need(!!mode,'#fieldVoiceMode','Tipo de registro de voz');
+      if(mode==='Grupal')need(Number($('#groupInterviewCount').value||0)>=2,'#fieldGroupCount','Cantidad de personas entrevistadas',$('#groupInterviewCount'));
+      else{need(!!$('#studentStatusChips .chip.active'),'#fieldStudentStatus','Condición (estudiante o egresado)');need(!!$('#personName').value.trim(),'#fieldPersonName','Nombre y apellidos',$('#personName'))}
+    }else if(isDocente)need(!!$('#personName').value.trim(),'#fieldPersonName','Nombre y apellidos del docente',$('#personName'));
+    if(!shouldSkipCurrentItem())list.push(...itemIssues());else clearItemInvalid();
+    const box=$('#captureMissing');box._mode='full';renderMissing('#captureMissing',list,{scroll:false});
+    if(list.length&&!silent){showToast(list.length===1?`Falta completar: ${list[0].label}.`:`Faltan ${list.length} campos. Revisa la lista resaltada.`);goToMissing(list[0])}
+    return !list.length;
   }
+  function refreshCaptureMissing(){const box=$('#captureMissing');if(!box||box.classList.contains('hidden'))return;if(box._mode==='item'){const l=itemIssues();renderMissing('#captureMissing',l)}else validateCaptureForm({silent:true})}
+  ['input','change'].forEach(ev=>$('#captureSheet')?.addEventListener(ev,()=>refreshCaptureMissing()));
+  $('#captureSheet')?.addEventListener('click',e=>{if(e.target.closest('.chip'))setTimeout(refreshCaptureMissing,30)});
   $('#saveCapture').addEventListener('click',async()=>{
     if(!validateCaptureForm())return;
     if(state.listening)stopMic();
     const now=new Date(),action=state.currentAction,editing=state.editingRecordId?state.records.find(r=>r.recordId===state.editingRecordId):null;
     const recordId=editing?.recordId||`RA-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}${String(now.getSeconds()).padStart(2,'0')}-${String(state.records.filter(r=>r.systemEvent==='REGISTRO_CAMPO').length+1).padStart(3,'0')}`;
-    const finalItem=captureItemValues(),items=[...(state.pendingItems||[]),finalItem];
+    const skipCurrent=shouldSkipCurrentItem(),finalItem=captureItemValues();
+    const items=state.editingItemIndex>=0?state.pendingItems.map((it,i)=>i===state.editingItemIndex?finalItem:it):(skipCurrent?[...state.pendingItems]:[...(state.pendingItems||[]),finalItem]);
     const allAttachments=items.flatMap(it=>it.attachments||[]);const attachmentRefs=await persistAttachments(recordId,allAttachments);
     const endAt=now.toISOString(),startAt=editing?.recordStartAt||state.currentRecordStartedAt||endAt,durationSeconds=Math.max(0,Math.round((new Date(endAt)-new Date(startAt))/1000)),recordStartTime=new Date(startAt).toTimeString().slice(0,8),recordEndTime=now.toTimeString().slice(0,8),recordDate=editing?.recordDate||now.toISOString().slice(0,10);
     const voiceMode=action==='Estudiante'?($('#voiceModeChips .chip.active')?.dataset.voiceMode||'Individual'):'Individual';
@@ -2031,6 +2105,31 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
 
 // Audio + transcripción multiplataforma (Android + iPhone/iPad)
   $('#micButton').addEventListener('click',()=>state.listening?stopMic():startMic());
+  // ---- Grabar de nuevo: descarta la grabación y la transcripción anteriores ----
+  function isRecordedAudioAtt(a){return !!a?.isRecordedAudio||/^audio_Ruta_SISE_/.test(attName(a))}
+  function hasRecording(){return !!state.audioObjectUrl||!!transcriptText()||state.currentAttachments.some(isRecordedAudioAtt)}
+  function updateReRecordBtn(){$('#reRecordBtn')?.classList.toggle('hidden',state.listening||!hasRecording())}
+  $('#reRecordBtn')?.addEventListener('click',()=>{
+    if(state.listening)return;
+    if(!confirm('¿Grabar de nuevo? Se borrarán la grabación y la transcripción anteriores de este ítem.'))return;
+    const prev=transcriptText();
+    state.currentAttachments=state.currentAttachments.filter(a=>{if(isRecordedAudioAtt(a)){if(a.url&&a.url!==state.audioObjectUrl){try{URL.revokeObjectURL(a.url)}catch(e){}}return false}return true});
+    if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){}state.audioObjectUrl=''}
+    $('#audioPlayback').pause?.();$('#audioPlayback').removeAttribute('src');$('#audioPlayback').style.display='none';
+    if(!$('#captureNote').value.trim()||$('#captureNote').value.trim()===prev)$('#captureNote').value='';
+    $('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.';
+    state.speechBaseText='';state.speechFinalText='';state.speechInterimText='';
+    renderAttachments();persistPendingCaptureSoon();
+    startMic();
+  });
+  {const _start=startMic,_stop=stopMic,_ra=renderAttachments,_rc=resetCaptureForm,_rci=resetCurrentItemFields,_load=loadItemIntoEditor;
+   startMic=async function(){$('#reRecordBtn')?.classList.add('hidden');const r=await _start.apply(this,arguments);updateReRecordBtn();return r};
+   stopMic=function(){const r=_stop.apply(this,arguments);if($('#micStatus'))$('#micStatus').textContent='Toca el micrófono para continuar grabando o usa “Grabar de nuevo” para empezar desde cero.';updateReRecordBtn();return r};
+   renderAttachments=function(){const r=_ra.apply(this,arguments);updateReRecordBtn();return r};
+   resetCaptureForm=function(){const r=_rc.apply(this,arguments);$('#reRecordBtn')?.classList.add('hidden');renderMissing('#captureMissing',[]);return r};
+   resetCurrentItemFields=function(){const r=_rci.apply(this,arguments);updateReRecordBtn();return r};
+   loadItemIntoEditor=async function(){const r=await _load.apply(this,arguments);updateReRecordBtn();return r};}
+
 
   function isIOSDevice(){
     return /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
