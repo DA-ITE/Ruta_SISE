@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
-  <title>Ruta SISE · SISE v68</title>
+  <title>Ruta SISE · SISE v69</title>
   <style>
     :root{
       --sise:#c8173e;
@@ -576,6 +576,14 @@
     .item-current-note .recent-actions{margin-top:8px}
     .recent-btn.danger{color:#b4233a;border-color:#efc7cf}
     .recent-btn.danger:hover{background:#fff5f7;border-color:#b4233a;color:#b4233a}
+
+    /* v69 · varias grabaciones */
+    .transcript{white-space:pre-line}
+    .recordings-list{display:grid;gap:8px;margin-top:10px;text-align:left}
+    .recordings-list:empty{display:none}
+    .recording-item{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+    .recording-item strong{display:block;font-size:13px;margin-bottom:6px;color:var(--ink)}
+    .recording-item audio{width:100%;height:36px}
 </style>
 </head>
 <body>
@@ -1002,7 +1010,8 @@
         <div id="speechCompat" style="margin-top:7px;font-size:11px;line-height:1.45;color:#64748b">Ruta SISE detectará automáticamente el motor compatible del celular. En iPhone/iPad prioriza Safari; en Android, Chrome.</div>
         <div class="transcript" id="transcriptBox">La transcripción aparecerá aquí y podrás revisarla antes de guardar.</div>
         <audio id="audioPlayback" class="audio-playback" controls></audio>
-        <div class="mic-actions"><button type="button" class="btn btn-outline btn-sm hidden" id="reRecordBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><circle cx="12" cy="12" r="3"/></svg>Grabar de nuevo</button></div>
+        <div class="recordings-list" id="recordingsList"></div>
+        <div class="mic-actions"><button type="button" class="btn btn-outline btn-sm hidden" id="reRecordBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3M19 3v4M17 5h4"/></svg>Nueva grabación</button></div>
       </div>
     </section>
 
@@ -2105,30 +2114,37 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
 
 // Audio + transcripción multiplataforma (Android + iPhone/iPad)
   $('#micButton').addEventListener('click',()=>state.listening?stopMic():startMic());
-  // ---- Grabar de nuevo: descarta la grabación y la transcripción anteriores ----
+  // ---- Varias grabaciones: cada una se guarda aparte y su transcripción se agrega a continuación ----
   function isRecordedAudioAtt(a){return !!a?.isRecordedAudio||/^audio_Ruta_SISE_/.test(attName(a))}
-  function hasRecording(){return !!state.audioObjectUrl||!!transcriptText()||state.currentAttachments.some(isRecordedAudioAtt)}
+  function hasRecording(){return !!transcriptText()||state.currentAttachments.some(isRecordedAudioAtt)}
   function updateReRecordBtn(){$('#reRecordBtn')?.classList.toggle('hidden',state.listening||!hasRecording())}
-  $('#reRecordBtn')?.addEventListener('click',()=>{
-    if(state.listening)return;
-    if(!confirm('¿Grabar de nuevo? Se borrarán la grabación y la transcripción anteriores de este ítem.'))return;
-    const prev=transcriptText();
-    state.currentAttachments=state.currentAttachments.filter(a=>{if(isRecordedAudioAtt(a)){if(a.url&&a.url!==state.audioObjectUrl){try{URL.revokeObjectURL(a.url)}catch(e){}}return false}return true});
-    if(state.audioObjectUrl){try{URL.revokeObjectURL(state.audioObjectUrl)}catch(e){}state.audioObjectUrl=''}
-    $('#audioPlayback').pause?.();$('#audioPlayback').removeAttribute('src');$('#audioPlayback').style.display='none';
-    if(!$('#captureNote').value.trim()||$('#captureNote').value.trim()===prev)$('#captureNote').value='';
-    $('#transcriptBox').textContent='La transcripción aparecerá aquí y podrás revisarla antes de guardar.';
-    state.speechBaseText='';state.speechFinalText='';state.speechInterimText='';
-    renderAttachments();persistPendingCaptureSoon();
-    startMic();
-  });
+  function renderRecordings(){
+    const box=$('#recordingsList');if(!box)return;
+    const recs=state.currentAttachments.filter(isRecordedAudioAtt);
+    $('#audioPlayback').style.display='none';
+    box.innerHTML=recs.map((a,i)=>{if(!a.url){const b=attBlob(a);if(b)a.url=URL.createObjectURL(b)}return a.url?`<div class="recording-item"><strong>Grabación ${i+1}</strong><audio controls preload="metadata" src="${a.url}"></audio></div>`:''}).join('');
+  }
+  $('#reRecordBtn')?.addEventListener('click',()=>{if(!state.listening)startMic()});
   {const _start=startMic,_stop=stopMic,_ra=renderAttachments,_rc=resetCaptureForm,_rci=resetCurrentItemFields,_load=loadItemIntoEditor;
    startMic=async function(){$('#reRecordBtn')?.classList.add('hidden');const r=await _start.apply(this,arguments);updateReRecordBtn();return r};
-   stopMic=function(){const r=_stop.apply(this,arguments);if($('#micStatus'))$('#micStatus').textContent='Toca el micrófono para continuar grabando o usa “Grabar de nuevo” para empezar desde cero.';updateReRecordBtn();return r};
-   renderAttachments=function(){const r=_ra.apply(this,arguments);updateReRecordBtn();return r};
+   stopMic=function(){const r=_stop.apply(this,arguments);if($('#micStatus'))$('#micStatus').textContent='Grabación guardada. Usa “Nueva grabación” para grabar otra parte; se conservan todas.';updateReRecordBtn();return r};
+   renderAttachments=function(){const r=_ra.apply(this,arguments);renderRecordings();updateReRecordBtn();return r};
    resetCaptureForm=function(){const r=_rc.apply(this,arguments);$('#reRecordBtn')?.classList.add('hidden');renderMissing('#captureMissing',[]);return r};
-   resetCurrentItemFields=function(){const r=_rci.apply(this,arguments);updateReRecordBtn();return r};
+   resetCurrentItemFields=function(){state.audioObjectUrl='';const r=_rci.apply(this,arguments);updateReRecordBtn();return r};
    loadItemIntoEditor=async function(){const r=await _load.apply(this,arguments);updateReRecordBtn();return r};}
+  // ---- Pantalla encendida mientras se graba (si se apaga, el celular corta la transcripción) ----
+  let screenWakeLock=null;
+  async function keepScreenOn(){try{if('wakeLock' in navigator&&!screenWakeLock){screenWakeLock=await navigator.wakeLock.request('screen');screenWakeLock.addEventListener?.('release',()=>{screenWakeLock=null})}}catch(e){}}
+  function releaseScreen(){try{screenWakeLock?.release()}catch(e){}screenWakeLock=null}
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState!=='visible'||!state.listening)return;
+    keepScreenOn();
+    if(state.recognition&&!state.recognitionActive&&!state.recognitionStarting&&!state.speechFatal){$('#micStatus').textContent='Retomando la transcripción…';scheduleRecognitionRestart()}
+  });
+  {const _s2=startMic,_t2=stopMic;
+   startMic=async function(){keepScreenOn();return _s2.apply(this,arguments)};
+   stopMic=function(){releaseScreen();return _t2.apply(this,arguments)};}
+
 
 
   function isIOSDevice(){
@@ -2149,7 +2165,8 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
     if(el.textContent.includes('aparecerá aquí')||el.textContent.includes('no ofrece transcripción'))el.textContent='';
   }
   function updateTranscriptDisplay(){
-    const text=[state.speechBaseText,state.speechFinalText,state.speechInterimText].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+    const live=[state.speechFinalText,state.speechInterimText].filter(Boolean).join(' ').replace(/\s+/g,' ').trim();
+    const text=(state.speechBaseText+(state.speechBaseText&&live&&!/\s$/.test(state.speechBaseText)?' ':'')+live).replace(/[ \t]+/g,' ').trim();
     if(text){
       $('#transcriptBox').textContent=text;
       $('#captureNote').value=text;
@@ -2226,10 +2243,8 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
         const type=state.mediaRecorder?.mimeType||mime||'audio/webm';
         const blob=new Blob(state.mediaChunks,{type});
         if(blob.size<1200)return;
-        if(state.audioObjectUrl)URL.revokeObjectURL(state.audioObjectUrl);
+        // Cada grabación se conserva como un audio independiente (no se reemplaza la anterior).
         state.audioObjectUrl=URL.createObjectURL(blob);
-        $('#audioPlayback').src=state.audioObjectUrl;
-        $('#audioPlayback').style.display='block';
         const ext=type.includes('mp4')?'m4a':'webm';
         const stamp=new Date().toISOString().replace(/[:.]/g,'-');
         try{
@@ -2271,7 +2286,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
       if(track){
         // Safari/iOS puede exponer SpeechRecognition pero no aceptar una pista compartida.
         // En ese caso se prioriza transcripción y se libera MediaRecorder antes de iniciar.
-        stopAndReleaseStream(true);
+        stopAndReleaseStream(false);
         state.recognitionTrack=null;
         state.recognitionUseTrack=false;
         setTimeout(()=>startRecognitionNow(recognition,null),220);
@@ -2285,7 +2300,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
   function scheduleRecognitionRestart(){
     clearTimeout(state.speechRestartTimer);
     if(!state.listening||state.speechManualStop||state.speechFatal)return;
-    state.speechRestartTimer=setTimeout(()=>startRecognitionNow(state.recognition,state.recognitionUseTrack?state.recognitionTrack:null),260);
+    state.speechRestartTimer=setTimeout(()=>startRecognitionNow(state.recognition,state.recognitionUseTrack?state.recognitionTrack:null),isIOSDevice()?120:60);
   }
 
   function wireRecognition(recognition){
@@ -2293,7 +2308,7 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
     recognition.interimResults=true;
     recognition.maxAlternatives=1;
     recognition.onstart=()=>{
-      state.recognitionStarting=false;
+      state.recognitionStarting=false;state.recognitionActive=true;
       $('#micStatus').textContent=state.speechLocal?'Transcribiendo en el dispositivo. Habla con naturalidad.':'Transcribiendo en vivo. Habla con naturalidad.';
     };
     recognition.onaudiostart=()=>{$('#micTitle').textContent='Escuchando y transcribiendo…'};
@@ -2316,8 +2331,8 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
       if(code==='aborted'&&state.speechManualStop)return;
       if(code==='no-speech'){$('#micStatus').textContent=speechErrorText(code);return}
       if(code==='audio-capture'&&state.recognitionUseTrack){
-        $('#micStatus').textContent='Ajustando el micrófono para iPhone/Android…';
-        stopAndReleaseStream(true);
+        $('#micStatus').textContent='Este celular no permite grabar y transcribir a la vez: se guardó el audio hasta aquí y se continúa transcribiendo.';
+        stopAndReleaseStream(false);
         state.recognitionTrack=null;
         state.recognitionUseTrack=false;
         return;
@@ -2341,7 +2356,9 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
       $('#micStatus').textContent=speechErrorText(code);
     };
     recognition.onend=()=>{
-      state.recognitionStarting=false;
+      state.recognitionStarting=false;state.recognitionActive=false;
+      // En celulares el motor suele cortarse sin marcar la última frase como final: se conserva.
+      if(state.speechInterimText){state.speechFinalText+=(state.speechFinalText?' ':'')+state.speechInterimText}
       state.speechInterimText='';
       updateTranscriptDisplay();
       if(state.listening&&!state.speechManualStop&&!state.speechFatal)scheduleRecognitionRestart();
@@ -2404,6 +2421,11 @@ $('#confirmDeriveBtn')?.addEventListener('click',async()=>{
     const SR=speechRecognitionClass();
     cleanTranscriptPlaceholder();
     state.speechBaseText=($('#transcriptBox').textContent||'').trim();
+    {const n=state.currentAttachments.filter(isRecordedAudioAtt).length;
+     if(n>=1&&state.speechBaseText){
+       if(!/^Grabación 1:/.test(state.speechBaseText))state.speechBaseText='Grabación 1: '+state.speechBaseText;
+       state.speechBaseText+=`\n\nGrabación ${n+1}: `;
+     }}
     state.speechFinalText='';state.speechInterimText='';state.speechManualStop=false;state.speechFatal=false;state.speechLocal=false;
     state.listening=true;
     $('#micButton').classList.add('recording');
